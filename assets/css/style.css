@@ -1,0 +1,296 @@
+/* ============================
+   ESTILO GENERAL CHOLOS & CHULAS
+   ============================ */
+
+   body {
+    /* Fondo oscuro con vibe street */
+    background: radial-gradient(circle at top, #333 0, #050505 45%, #000 100%);
+    color: #f5f5f5;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+
+/* ============================
+   GRID DE PRODUCTOS
+   ============================ */
+.grid-products {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 30px;
+}
+
+/* ============================
+   CARD DEL PRODUCTO
+   ============================ */
+.product-card {
+    background: rgba(15, 15, 15, 0.95);
+    padding: 18px;
+    border-radius: 18px;
+    border: 1px solid #2b2b2b;
+    box-shadow: 0 0 18px rgba(0, 0, 0, 0.7);
+    transition: 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    border-color: #ff1b3d; /* rojo similar al contorno del logo */
+    box-shadow: 0 0 25px rgba(255, 27, 61, 0.4);
+}
+
+/* IMG PRODUCTO */
+.product-card img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    border-radius: 14px;
+    margin-bottom: 15px;
+}
+
+/* NOMBRE */
+.product-card h2 {
+    font-size: 20px;
+    margin: 5px 0;
+    color: #ffffff;
+}
+
+/* CATEGORIA */
+.product-card .category {
+    color: #b3b3b3;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+/* PRECIO */
+.product-card .price {
+    font-size: 22px;
+    margin-bottom: 10px;
+    color: #ff1b3d; /* rojo principal */
+    font-weight: 700;
+}
+
+/* SELECTORES (talla, color, cantidad) */
+.product-card select,
+.product-card input[type="number"] {
+    padding: 7px;
+    margin-top: 5px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #141414;
+    color: #f5f5f5;
+    font-size: 14px;
+    width: 100%;
+}
+
+/* ============================
+   BOTÓN WHATSAPP
+   ============================ */
+.btn-whatsapp {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #25d366; /* verde wa */
+    color: #000;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-whatsapp:hover {
+    background: #1ed760;
+    box-shadow: 0 0 12px rgba(37, 211, 102, 0.8);
+}
+
+/* ============================
+   HEADER
+   ============================ */
+.site-header {
+    background: linear-gradient(90deg, #000000, #181818, #000000);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #ff1b3d;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.8);
+}
+
+/* Logo con imagen */
+.site-header .logo img {
+    height: 70px;
+    object-fit: contain;
+    display: block;
+}
+
+/* Si usas texto en lugar de imagen */
+.logo-text {
+  font-family: 'Great Vibes', cursive;
+  font-size: 48px;
+  color: #fff;
+  font-weight: normal;
+  text-shadow: 
+      0 0 4px #ff1b3d,
+      0 0 10px rgba(0,0,0,0.8),
+      0 0 20px rgba(255,27,61,0.5);
+}
+
+/* Menú */
+.main-nav a {
+    margin-left: 20px;
+    text-decoration: none;
+    color: #f5f5f5;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.main-nav a:hover {
+    color: #ff1b3d;
+}
+
+/* ============================
+   FOOTER
+   ============================ */
+.site-footer {
+    margin-top: 50px;
+    padding: 20px;
+    text-align: center;
+    color: #888;
+    font-size: 13px;
+    border-top: 1px solid #2b2b2b;
+    background: #050505;
+}
+
+/* ============================
+   RESPONSIVE
+   ============================ */
+
+@media (max-width: 768px) {
+    .site-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .main-nav a {
+        margin-left: 0;
+        margin-right: 15px;
+        font-size: 14px;
+    }
+    .main-nav a.active {
+        color: #ff1b3d;
+        border-bottom: 2px solid #ff1b3d;
+        padding-bottom: 3px;
+    }
+    h1 {
+        font-size: 28px;
+    }
+}
+.category-section {
+    margin-bottom: 50px;
+}
+
+.category-title {
+    font-size: 22px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 10px 0 20px;
+    color: #fff;
+    display: inline-block;
+    padding: 8px 14px;
+    border-left: 4px solid #ff1b3d;
+    background: rgba(0,0,0,0.35);
+    border-radius: 10px;
+}
+/* =========================================
+   MOBILE: CARRUSEL TOUCH para .grid-products
+   (sin flechas, solo swipe)
+========================================= */
+
+@media (max-width: 768px) {
+
+    /* convierte el grid en carrusel horizontal */
+    .grid-products.is-snap-carousel{
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      overflow-y: hidden;
+  
+      padding: 10px 12px 16px;
+  
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+  
+      /* hace que el snap se sienta suave */
+      scroll-behavior: smooth;
+  
+      /* para que el primer/último item no quede pegado */
+      scroll-padding-left: 12px;
+      scroll-padding-right: 12px;
+    }
+  
+    /* oculta scrollbar */
+    .grid-products.is-snap-carousel::-webkit-scrollbar { display: none; }
+    .grid-products.is-snap-carousel { scrollbar-width: none; }
+  
+    /* cada card ocupa casi pantalla (efecto carrusel) */
+    .grid-products.is-snap-carousel .product-card{
+      flex: 0 0 84%;
+      scroll-snap-align: start;
+  
+      /* evita seleccionar texto al arrastrar */
+      user-select: none;
+      -webkit-user-select: none;
+  
+      /* permite swipe horizontal */
+      touch-action: pan-x;
+    }
+  
+    /* imagen un poquito más baja en mobile para que no se sienta enorme */
+    .grid-products.is-snap-carousel .product-card img{
+      height: 220px; /* antes 260 */
+    }
+  }
+  
+  /* teléfonos muy chicos */
+  @media (max-width: 420px){
+    .grid-products.is-snap-carousel .product-card{
+      flex-basis: 90%;
+    }
+  }
+  
+  /* fade a la derecha para que se note que se puede deslizar */
+  @media (max-width: 768px){
+    .catalog-wrap{
+      position: relative;
+    }
+    .catalog-wrap::after{
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 46px;
+      height: 100%;
+      pointer-events: none;
+      background: linear-gradient(to left, rgba(0,0,0,.95), rgba(0,0,0,0));
+    }
+  }
+  
+  /* opcional: reduce “choques” entre swipe y botones/inputs */
+  @media (max-width: 768px){
+    .grid-products.is-snap-carousel .btn-whatsapp,
+    .grid-products.is-snap-carousel select,
+    .grid-products.is-snap-carousel input{
+      touch-action: manipulation;
+    }
+  }

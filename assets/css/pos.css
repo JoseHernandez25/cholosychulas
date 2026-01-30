@@ -1,0 +1,72 @@
+/* assets/css/pos.css */
+/* ===== POS (solo afecta clases .pos-*) ===== */
+.pos-wrap{max-width:1200px;margin:18px auto;padding:0 14px;font-family:'Montserrat',sans-serif}
+.pos-topbar{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  background:rgba(15,15,15,.95);border:1px solid #2b2b2b;border-radius:18px;padding:14px;
+  box-shadow:0 0 18px rgba(0,0,0,.7)
+}
+.pos-title{font-weight:900;font-size:18px;letter-spacing:.5px}
+.pos-sub{color:#bdbdbd;font-size:12px;margin-top:2px}
+.pos-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pos-pill{padding:7px 10px;border:1px solid #2b2b2b;border-radius:999px;font-size:12px;color:#bdbdbd;background:rgba(0,0,0,.25)}
+.pos-btn{
+  border:1px solid #2b2b2b;background:#121212;color:#f5f5f5;
+  padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:800;text-decoration:none;display:inline-block
+}
+.pos-btn:hover{border-color:#3a3a3a}
+.pos-btn.primary{background:linear-gradient(135deg,#7c3aed,#3b82f6);border-color:transparent}
+.pos-btn.danger{background:#1a0b0b;border-color:#3a1a1a;color:#ffd6d6}
+.pos-grid{display:grid;grid-template-columns:1.6fr .9fr;gap:14px;margin-top:14px}
+@media (max-width: 980px){.pos-grid{grid-template-columns:1fr}}
+.pos-card{
+  background:rgba(15,15,15,.95);border:1px solid #2b2b2b;border-radius:18px;
+  box-shadow:0 0 18px rgba(0,0,0,.7);overflow:hidden
+}
+.pos-card-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px;border-bottom:1px solid #242424}
+.pos-card-t{color:#bdbdbd;font-size:12px;text-transform:uppercase;letter-spacing:.6px;font-weight:900}
+.pos-k{color:#9b9b9b;font-size:12px}
+.pos-card-b{padding:14px}
+.pos-scan{
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  padding:12px;border:1px dashed #2f2f2f;border-radius:16px;background:rgba(0,0,0,.25)
+}
+.pos-scan input{
+  flex:1;min-width:240px;padding:12px 12px;border-radius:12px;border:1px solid #2a2a2a;
+  background:#0b0b0b;color:#f5f5f5;outline:none;font-size:16px;font-weight:900;letter-spacing:.4px
+}
+.pos-scan input:focus{border-color:#4c4c4c}
+.pos-hint{color:#bdbdbd;font-size:12px}
+.pos-status{padding:8px 10px;border-radius:12px;border:1px solid #2b2b2b;background:#0b0b0b;font-size:12px;color:#bdbdbd;max-width:380px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pos-status.ok{color:#b9ffe1;border-color:#1f3a2f}
+.pos-status.bad{color:#ffd6d6;border-color:#3a1a1a}
+.pos-status.warn{color:#fff1c2;border-color:#3a321a}
+.pos-divider{height:1px;background:#1f1f1f;margin:12px 0}
+.pos-tablewrap{overflow:auto;border:1px solid #1f1f1f;border-radius:16px}
+.pos-table{width:100%;border-collapse:collapse}
+.pos-table th,.pos-table td{padding:10px 8px;border-bottom:1px solid #1f1f1f}
+.pos-table th{font-size:12px;color:#bdbdbd;text-transform:uppercase;letter-spacing:.4px;text-align:left}
+.pos-table td{font-size:14px}
+.pos-table td.r,.pos-table th.r{text-align:right}
+.pos-row{cursor:pointer}
+.pos-row:hover td{background:rgba(255,255,255,.03)}
+.pos-row.sel td{outline:1px solid rgba(124,58,237,.55);background:rgba(124,58,237,.08)}
+.qtybox{display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.qty{
+  width:58px;text-align:center;padding:7px 8px;border-radius:10px;
+  border:1px solid #2a2a2a;background:#0b0b0b;color:#f5f5f5;font-weight:1000
+}
+.muted{color:#9b9b9b;font-size:12px}
+.pos-totalbox{display:flex;flex-direction:column;gap:10px}
+.pos-total{
+  padding:16px;border-radius:18px;border:1px solid #2a2a2a;
+  background:linear-gradient(180deg, rgba(124,58,237,.22), rgba(59,130,246,.12))
+}
+.pos-total .lbl{color:#bdbdbd;font-size:12px;text-transform:uppercase;letter-spacing:.6px;font-weight:900}
+.pos-total .val{font-size:44px;font-weight:1000;margin-top:6px}
+.pos-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pos-meta .box{padding:12px;border-radius:16px;border:1px solid #2b2b2b;background:rgba(0,0,0,.22)}
+.pos-meta .t{color:#bdbdbd;font-size:12px}
+.pos-meta .v{font-size:18px;font-weight:1000;margin-top:4px}
+.pos-pay{display:flex;gap:10px;flex-wrap:wrap}
+.pos-pay .pos-btn{flex:1;min-width:160px;padding:14px 14px;border-radius:16px}

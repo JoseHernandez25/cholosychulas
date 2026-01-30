@@ -1,0 +1,52 @@
+body{ margin:0; font-family:Montserrat, Arial, sans-serif; background:#0b0b0b; color:#f5f5f5; }
+
+.admin-sidebar{
+  position:fixed; inset:0 auto 0 0;
+  width:260px; padding:18px 14px;
+  background:rgba(10,10,10,.96);
+  border-right:1px solid #2b2b2b;
+  display:flex; flex-direction:column; gap:16px;
+}
+
+.admin-brand{
+  display:flex; gap:12px; align-items:center;
+  padding:10px; border:1px solid #2b2b2b;
+  border-radius:14px; background:rgba(20,20,20,.8);
+}
+.logo-dot{ width:14px; height:14px; border-radius:50%;
+  background:linear-gradient(135deg,#ff4d6d,#ffbd00);
+  box-shadow:0 0 18px rgba(255,77,109,.35);
+}
+.brand-title{ font-weight:800; }
+.brand-sub{ font-size:12px; opacity:.7; }
+
+.admin-nav{ display:flex; flex-direction:column; gap:6px; }
+.nav-section{ margin:14px 10px 6px; font-size:12px; text-transform:uppercase; opacity:.6; letter-spacing:1px; }
+.nav-link{
+  display:flex; gap:10px; align-items:center;
+  padding:10px 12px; border-radius:12px;
+  color:#f2f2f2; text-decoration:none;
+  background:rgba(255,255,255,.03);
+  border:1px solid transparent;
+}
+.nav-link:hover{ background:rgba(255,255,255,.06); border-color:#3a3a3a; }
+.nav-link.danger{ background:rgba(255,0,80,.08); border-color:rgba(255,0,80,.18); }
+
+.admin-page{ margin-left:260px; min-height:100vh; }
+.admin-topbar{
+  position:sticky; top:0; z-index:10;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 18px;
+  background:rgba(0,0,0,.55);
+  border-bottom:1px solid #2b2b2b;
+  backdrop-filter: blur(8px);
+}
+.topbar-btn{
+  display:inline-block; padding:8px 12px;
+  border-radius:12px; border:1px solid #2b2b2b;
+  background:rgba(255,255,255,.06);
+  color:#fff; text-decoration:none;
+}
+.topbar-btn:hover{ background:rgba(255,255,255,.1); }
+
+.admin-content{ padding:18px; }
