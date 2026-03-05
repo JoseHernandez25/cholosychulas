@@ -12,9 +12,5 @@
 
 <div class="nav-section">Productos</div>
 <a class="nav-link" href="?c=product&a=create">➕ Registrar producto</a>
-
-
-<div class="nav-section">Sesión</div>
-<a class="nav-link danger" href="?c=auth&a=logout">🚪 Salir</a>
 </nav>
 </aside>

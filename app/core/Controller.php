@@ -32,4 +32,22 @@ class Controller
             require $viewFile;
         }
     }
+    protected function requireLogin(): void
+    {
+        if (empty($_SESSION['user'])) {
+        header('Location: ?c=auth&a=login');
+        exit;
+        }
+    }
+
+
+    protected function requireRole(string $role): void
+        {
+        $this->requireLogin();
+        if (empty($_SESSION['user']['role']) || $_SESSION['user']['role'] !== $role) {
+        http_response_code(403);
+        echo "Acceso denegado";
+        exit;
+        }
+    }
 }

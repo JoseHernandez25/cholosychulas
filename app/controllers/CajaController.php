@@ -6,6 +6,10 @@ require_once __DIR__ . '/../models/Sale.php';
 
 class CajaController extends Controller
 {
+    public function __construct()
+    {
+    $this->requireLogin();
+    }
     public function index()
     {
         $this->render('admin/caja', [

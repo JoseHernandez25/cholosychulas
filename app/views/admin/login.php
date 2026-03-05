@@ -82,14 +82,14 @@ $error = $error ?? '';
     <h1>Admin Login</h1>
 
     <?php if ($error): ?>
-        <div class="msg-err"><?php echo htmlspecialchars($error); ?></div>
+        <div class="msg-err"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <!-- IMPORTANTE: action apunta al router con page=auth&action=doLogin -->
-    <form method="post" action="index.php?page=auth&action=doLogin">
+    <!-- AHORA APUNTA AL ROUTER NUEVO -->
+    <form method="post" action="?c=auth&a=login">
         <div class="form-group">
             <label>Usuario</label>
-            <input type="text" name="username" required>
+            <input type="text" name="username" required autofocus>
         </div>
 
         <div class="form-group">

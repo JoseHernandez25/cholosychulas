@@ -1,60 +1,62 @@
 <?php
-// app/controllers/AuthController.php
+require_once __DIR__ . '/../core/Controller.php';
+require_once __DIR__ . '/../models/User.php';
 
-class AuthController
+class AuthController extends Controller
 {
-    private function startSession()
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-    }
-
     public function login()
     {
-        $this->startSession();
-
-        // si ya está logueado, manda directo al admin
-        if (!empty($_SESSION['admin_logged'])) {
-            header("Location: index.php?page=admin_products");
+        // Si ya está logueado, al admin (caja)
+        if (!empty($_SESSION['user'])) {
+            header("Location: ?c=caja&a=index");
             exit;
         }
 
-        $error = !empty($_GET['err']) ? $_GET['err'] : '';
+        $error = null;
 
+        // Si viene POST, procesa aquí mismo (ya no uses doLogin aparte)
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $username = trim($_POST['username'] ?? '');
+            $password = (string)($_POST['password'] ?? '');
+
+            $u = User::findByUsername($username);
+
+            if (!$u || (int)$u['is_active'] !== 1) {
+                $error = 'Usuario o contraseña incorrectos';
+            } elseif (!password_verify($password, $u['password_hash'])) {
+                $error = 'Usuario o contraseña incorrectos';
+            } else {
+                // Guardar sesión limpia (sin hash)
+                $_SESSION['user'] = [
+                    'id'       => (int)$u['id'],
+                    'username' => $u['username'],
+                    'name'     => $u['name'],
+                    'role'     => $u['role'],
+                ];
+
+                header("Location: ?c=caja&a=index");
+                exit;
+            }
+        }
+
+        // Renderiza tu vista existente: app/views/admin/login.php
+        // OJO: esta vista debe tener form method="post"
         include __DIR__ . '/../views/admin/login.php';
-    }
-
-    public function doLogin()
-    {
-        $this->startSession();
-
-        $user = $_POST['username'] ?? '';
-        $pass = $_POST['password'] ?? '';
-
-        // 🔐 Credenciales HARDCODEADAS (cámbialas a lo que quieras)
-        $ADMIN_USER = 'admin';
-        $ADMIN_PASS = '1234';
-
-        if ($user === $ADMIN_USER && $pass === $ADMIN_PASS) {
-            $_SESSION['admin_logged'] = true;
-            header("Location: index.php?page=admin_products");
-            exit;
-        } else {
-            $err = urlencode('Usuario o contraseña incorrectos');
-            header("Location: index.php?page=auth&action=login&err={$err}");
-            exit;
-        }
     }
 
     public function logout()
     {
-        $this->startSession();
-
         $_SESSION = [];
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
         session_destroy();
 
-        header("Location: index.php?page=auth&action=login");
+        header("Location: ?c=auth&a=login");
         exit;
     }
 }

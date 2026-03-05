@@ -7,40 +7,68 @@ require_once __DIR__ . '/../models/Category.php';
 
 class ProductController extends Controller
 {
+    public function __construct()
+    {
+        $this->requireRole('admin');
+    }
+
     // =========================================
-    // LISTADO + FORMULARIO
-    // URL: index.php?c=product&a=index
+    // EXISTENCIAS (LISTADO)
+    // URL: ?c=product&a=index
     // =========================================
     public function index()
     {
-        $productModel  = new Product();
-        $categoryModel = new Category();
-
-        $products   = $productModel->allForAdmin();
-        $categories = $categoryModel->allActive();
-
-        // edición
-        $editProduct = null;
-        if (!empty($_GET['edit'])) {
-            $editProduct = $productModel->find((int)$_GET['edit']);
-        }
+        $productModel = new Product();
+        $products = $productModel->allForAdmin();
 
         $success = !empty($_GET['ok']);
         $error   = $_GET['err'] ?? '';
 
-        // render con layout
-        $this->render('admin/products', compact(
-            'products',
-            'categories',
-            'editProduct',
-            'success',
-            'error'
-        ));
+        $this->render('admin/products', compact('products', 'success', 'error'), 'admin');
+    }
+
+    // =========================================
+    // REGISTRAR PRODUCTO (FORM VACÍO)
+    // URL: ?c=product&a=create
+    // =========================================
+    public function create()
+    {
+        $categoryModel = new Category();
+        $categories = $categoryModel->allActive();
+
+        $editProduct = null;
+        $success = !empty($_GET['ok']);
+        $error   = $_GET['err'] ?? '';
+
+        $this->render('admin/product_form', compact('categories', 'editProduct', 'success', 'error'), 'admin');
+    }
+
+    // =========================================
+    // EDITAR PRODUCTO (FORM PRECARGADO)
+    // URL: ?c=product&a=edit&id=#
+    // =========================================
+    public function edit()
+    {
+        if (empty($_GET['id'])) {
+            header("Location: ?c=product&a=index");
+            exit;
+        }
+
+        $productModel  = new Product();
+        $categoryModel = new Category();
+
+        $editProduct = $productModel->find((int)$_GET['id']);
+        $categories  = $categoryModel->allActive();
+
+        $success = !empty($_GET['ok']);
+        $error   = $_GET['err'] ?? '';
+
+        $this->render('admin/product_form', compact('categories', 'editProduct', 'success', 'error'), 'admin');
     }
 
     // =========================================
     // GUARDAR (nuevo / editar)
-    // URL: index.php?c=product&a=save
+    // URL: ?c=product&a=save
     // =========================================
     public function save()
     {
@@ -58,7 +86,7 @@ class ProductController extends Controller
 
         if ($name === '' || !$category_id) {
             $err = urlencode('Nombre y categoría son obligatorios');
-            header("Location: index.php?c=product&a=index&err={$err}");
+            header("Location: ?c=product&a=create&err={$err}");
             exit;
         }
 
@@ -98,29 +126,29 @@ class ProductController extends Controller
         try {
             // 🔥 el barcode CC se genera SOLO en el modelo
             $productModel->save($data);
-            header("Location: index.php?c=product&a=index&ok=1");
+            header("Location: ?c=product&a=index&ok=1");
         } catch (Exception $e) {
             $err = urlencode('Error al guardar: ' . $e->getMessage());
-            header("Location: index.php?c=product&a=index&err={$err}");
+            header("Location: ?c=product&a=index&err={$err}");
         }
         exit;
     }
 
     // =========================================
     // ACTIVAR / DESACTIVAR
-    // URL: index.php?c=product&a=toggle&id=#
+    // URL: ?c=product&a=toggle&id=#
     // =========================================
     public function toggle()
     {
         if (empty($_GET['id'])) {
-            header("Location: index.php?c=product&a=index");
+            header("Location: ?c=product&a=index");
             exit;
         }
 
         $productModel = new Product();
         $productModel->toggleActive((int)$_GET['id']);
 
-        header("Location: index.php?c=product&a=index");
+        header("Location: ?c=product&a=index");
         exit;
     }
 }
