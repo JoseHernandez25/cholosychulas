@@ -33,13 +33,18 @@ body{ margin:0; font-family:Montserrat, Arial, sans-serif; background:#0b0b0b; c
 .nav-link.danger{ background:rgba(255,0,80,.08); border-color:rgba(255,0,80,.18); }
 
 .admin-page{ margin-left:260px; min-height:100vh; }
-.admin-topbar{
-  position:sticky; top:0; z-index:10;
-  display:flex; justify-content:space-between; align-items:center;
-  padding:14px 18px;
-  background:rgba(0,0,0,.55);
-  border-bottom:1px solid #2b2b2b;
-  backdrop-filter: blur(8px);
+.is-admin .admin-topbar{
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(0,0,0,.88);
+  border-bottom: 1px solid rgba(255,0,80,.35);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.30);
 }
 .topbar-btn{
   display:inline-block; padding:8px 12px;
@@ -51,18 +56,6 @@ body{ margin:0; font-family:Montserrat, Arial, sans-serif; background:#0b0b0b; c
 
 .admin-content{ padding:18px; }
 /* ===== TOPBAR ADMIN ===== */
-.is-admin .admin-topbar{
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding: 14px 18px;
-  background: rgba(0,0,0,.65);
-  border-bottom: 1px solid rgba(255,0,80,.35);
-  backdrop-filter: blur(10px);
-}
 
 .is-admin .admin-topbar-left{
   display:flex;
