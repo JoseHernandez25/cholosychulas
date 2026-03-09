@@ -8,7 +8,7 @@ $role     = $_SESSION['user']['role'] ?? '';
       ☰
     </button>
 
-    <div class="admin-brand-top">Cholos &amp; Chulas</div>
+    <div class="admin-brand-top">Cholos y Chulas</div>
     <div class="admin-topbar-sub">Panel Admin</div>
   </div>
 

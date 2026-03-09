@@ -90,11 +90,18 @@ body{ margin:0; font-family:Montserrat, Arial, sans-serif; background:#0b0b0b; c
 }
 
 .is-admin .admin-brand-top{
-  font-weight: 900;
-  font-size: 22px;
-  letter-spacing: .5px;
-  color: #ff4d6d;
-  text-shadow: 0 0 14px rgba(255,77,109,.35);
+  margin:0;
+  font-family:'Chicanos', serif;
+  font-size:54px;
+  line-height:1.05;
+  font-weight:normal;
+  color:#ff4d6d;
+  text-shadow:
+  1px 1px 0 #000,
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px 1px 0 #000,
+    0 4px 12px rgba(0,0,0,.45);
 }
 
 .is-admin .admin-top-links{
@@ -881,4 +888,16 @@ body.sidebar-collapsed .admin-sidebar-brand{
 body.sidebar-collapsed .admin-sidebar-logo{
   width:92px;
   height:92px;
+}
+@font-face{
+  font-family:'Chicanos';
+  src:url('../fonts/ChicanosPersonalUseRegular-qZDw5.woff2') format('truetype');
+  font-weight:normal;
+  font-style:normal;
+}
+
+@media (max-width: 900px){
+  .is-admin .admin-brand-top{
+    font-size:22px;
+  }
 }

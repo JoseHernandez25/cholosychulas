@@ -10,6 +10,13 @@ $baseUrl = $config['app']['base_url'];
     <title>Admin Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+        @font-face {
+            font-family: 'Chicanos';
+            src: url('<?= $baseUrl ?>assets/fonts/ChicanosPersonalUseRegular-qZDw5.woff2') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         *{
             box-sizing:border-box;
         }
@@ -98,18 +105,25 @@ $baseUrl = $config['app']['base_url'];
 
         .brand-copy h1{
             margin:0;
-            font-size:28px;
+            font-family:'Chicanos', serif;
+            font-size:54px;
             line-height:1.05;
-            font-weight:900;
-            color:#ff5d7a;
+            font-weight:normal;
+            color:#f0f0f0;
+            text-shadow:
+                1px 1px 0 #000,
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                0 4px 12px rgba(0,0,0,.45);
         }
 
         .brand-copy p{
-            margin:6px 0 0;
-            font-size:12px;
+            margin:10px 0 0;
+            font-size:11px;
             color:rgba(255,255,255,.62);
             text-transform:uppercase;
-            letter-spacing:.8px;
+            letter-spacing:1.2px;
         }
 
         .login-head{
@@ -239,7 +253,7 @@ $baseUrl = $config['app']['base_url'];
             }
 
             .brand-copy h1{
-                font-size:24px;
+                font-size:31px;
             }
 
             .login-head h2{
@@ -255,16 +269,18 @@ $baseUrl = $config['app']['base_url'];
 
 <div class="login-box">
     <div class="login-brand login-brand-center">
-        <img src="<?= $baseUrl ?>assets/imgs/logo2.PNG" alt="Cholos &amp; Chulas" class="login-logo">
+        <img src="<?= $baseUrl ?>assets/imgs/logo2.webp" alt="Cholos &amp; Chulas" class="login-logo">
         <div class="brand-copy">
-            <h1>Cholos &amp; Chulas</h1>
+            <h1>
+                <span>Cholos y</span><br>
+                <span>Chulas</span>
+            </h1>
             <p>Panel administrativo</p>
         </div>
     </div>
 
     <div class="login-head">
         <h2>Iniciar sesión</h2>
-        <span>Acceso restringido para administradores</span>
     </div>
 
     <?php if ($error): ?>

@@ -13,7 +13,7 @@ $isProductForm  = ($currentC === 'product' && in_array($currentA, ['create', 'ed
 ?>
 <aside class="admin-sidebar" id="adminSidebar">
   <div class="admin-sidebar-brand">
-  <img src="assets/imgs/logo2.PNG" alt="Cholos & Chulas" class="admin-sidebar-logo">
+  <img src="assets/imgs/logo2.webp" alt="Cholos & Chulas" class="admin-sidebar-logo">
 </div>
   <nav class="admin-nav">
     <div class="nav-section">Caja</div>
