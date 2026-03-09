@@ -2,7 +2,7 @@
 $sales = $sales ?? [];
 ?>
 
-<div class="panel panel-left">
+<div class="panel panel-right form-panel product-form-panel">
 
 <div class="panel-head">
 <h2 class="title-panel">Ventas</h2>

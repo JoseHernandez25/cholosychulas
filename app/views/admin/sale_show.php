@@ -3,7 +3,7 @@ $sale = $sale ?? [];
 $items = $items ?? [];
 ?>
 
-<div class="panel panel-right">
+<div class="panel panel-right form-panel product-form-panel">
 
 <div class="panel-head">
 <h2 class="title-panel">Venta #<?= $sale['id'] ?></h2>

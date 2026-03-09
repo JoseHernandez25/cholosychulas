@@ -5,7 +5,7 @@ $editProduct = $editProduct ?? null;
 $categories  = $categories  ?? [];
 ?>
 
-<div class="panel panel-right">
+<div class="panel panel-right form-panel product-form-panel">
   <div class="panel-head">
     <div>
       <h2 class="title-panel"><?= $editProduct ? 'Editar producto' : 'Registrar producto' ?></h2>

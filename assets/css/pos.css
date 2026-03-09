@@ -70,3 +70,72 @@
 .pos-meta .v{font-size:18px;font-weight:1000;margin-top:4px}
 .pos-pay{display:flex;gap:10px;flex-wrap:wrap}
 .pos-pay .pos-btn{flex:1;min-width:160px;padding:14px 14px;border-radius:16px}
+
+.pos-btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  pointer-events:none;
+}
+
+.cash-info-row{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap:16px;
+  margin: 14px 0 22px 0;
+}
+
+.cash-chip{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:14px 16px;
+}
+
+.cash-chip .lbl{
+  display:block;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.7px;
+  opacity:.65;
+  margin-bottom:6px;
+}
+
+.cash-chip strong{
+  font-size:15px;
+  font-weight:800;
+  color:#fff;
+  word-break:break-word;
+  line-height:1.2;
+}
+
+@media (max-width: 1100px){
+  .cash-info-row{
+    grid-template-columns: repeat(3, minmax(0,1fr));
+  }
+}
+
+@media (max-width: 800px){
+  .cash-info-row{
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+}
+
+@media (max-width: 540px){
+  .cash-info-row{
+    grid-template-columns: 1fr;
+  }
+}
+.cash-chip.cash-chip-accent{
+  background: linear-gradient(135deg, rgba(101,67,255,.18), rgba(41,116,255,.18));
+  border:1px solid rgba(120,140,255,.28);
+  box-shadow: 0 8px 22px rgba(0,0,0,.22);
+}
+
+.cash-chip.cash-chip-accent .lbl{
+  color: rgba(255,255,255,.78);
+}
+
+.cash-chip.cash-chip-accent strong{
+  font-size:18px;
+  font-weight:900;
+}

@@ -4,7 +4,7 @@ $error    = $error    ?? '';
 $products = $products ?? [];
 ?>
 
-<div class="panel panel-left">
+<div class="panel panel-right form-panel product-form-panel">
   <div class="panel-head">
     <h2 class="title-panel">Existencias</h2>
     <a class="btn-primary" href="?c=product&a=create">+ Nuevo producto</a>
