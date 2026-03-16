@@ -37,10 +37,15 @@ class ProductController extends Controller
         $categories = $categoryModel->allActive();
 
         $editProduct = null;
+        $variants = [];
         $success = !empty($_GET['ok']);
         $error   = $_GET['err'] ?? '';
 
-        $this->render('admin/product_form', compact('categories', 'editProduct', 'success', 'error'), 'admin');
+        $this->render(
+            'admin/product_form',
+            compact('categories', 'editProduct', 'variants', 'success', 'error'),
+            'admin'
+        );
     }
 
     // =========================================
@@ -59,11 +64,16 @@ class ProductController extends Controller
 
         $editProduct = $productModel->find((int)$_GET['id']);
         $categories  = $categoryModel->allActive();
+        $variants    = $editProduct ? $productModel->getVariants((int)$editProduct['id']) : [];
 
         $success = !empty($_GET['ok']);
         $error   = $_GET['err'] ?? '';
 
-        $this->render('admin/product_form', compact('categories', 'editProduct', 'success', 'error'), 'admin');
+        $this->render(
+            'admin/product_form',
+            compact('categories', 'editProduct', 'variants', 'success', 'error'),
+            'admin'
+        );
     }
 
     // =========================================
@@ -74,15 +84,17 @@ class ProductController extends Controller
     {
         $productModel = new Product();
 
-        $id            = $_POST['id']            ?? null;
-        $name          = trim($_POST['name']     ?? '');
-        $price         = $_POST['price']         ?? 0;
-        $category_id   = $_POST['category_id']   ?? null;
-        $stock         = $_POST['stock']         ?? 0;
+        $id            = $_POST['id'] ?? null;
+        $name          = trim($_POST['name'] ?? '');
+        $price         = $_POST['price'] ?? '';
+        $category_id   = $_POST['category_id'] ?? null;
+        $stock         = $_POST['stock'] ?? 0;
         $description   = trim($_POST['description'] ?? '');
-        $sort_order    = $_POST['sort_order']    ?? null;
+        $sort_order    = $_POST['sort_order'] ?? null;
         $active        = isset($_POST['active']) ? 1 : 0;
+        $has_variants  = isset($_POST['has_variants']) ? 1 : 0;
         $current_image = $_POST['current_image'] ?? '';
+        $variants      = $_POST['variants'] ?? [];
 
         if ($name === '' || !$category_id) {
             $err = urlencode('Nombre y categoría son obligatorios');
@@ -112,28 +124,72 @@ class ProductController extends Controller
         }
 
         $data = [
-            'id'          => $id ?: null,
-            'name'        => $name,
-            'price'       => $price,
-            'category_id' => $category_id,
-            'stock'       => $stock,
-            'description' => $description,
-            'sort_order'  => $sort_order,
-            'active'      => $active,
-            'image_url'   => $image_url,
+            'id'           => $id ?: null,
+            'name'         => $name,
+            'price'        => $price,
+            'has_variants' => $has_variants,
+            'category_id'  => $category_id,
+            'stock'        => $stock,
+            'description'  => $description,
+            'sort_order'   => $sort_order,
+            'active'       => $active,
+            'image_url'    => $image_url,
+            'variants'     => $variants,
         ];
 
         try {
-            // 🔥 el barcode CC se genera SOLO en el modelo
             $productModel->save($data);
             header("Location: ?c=product&a=index&ok=1");
         } catch (Exception $e) {
             $err = urlencode('Error al guardar: ' . $e->getMessage());
             header("Location: ?c=product&a=index&err={$err}");
         }
+
         exit;
     }
+    public function variants()
+    {
+        header('Content-Type: application/json; charset=utf-8');
 
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            echo json_encode([
+                'ok' => false,
+                'msg' => 'Producto inválido'
+            ]);
+            return;
+        }
+
+        try {
+            $productModel = new Product();
+            $product = $productModel->find($id);
+
+            if (!$product) {
+                echo json_encode([
+                    'ok' => false,
+                    'msg' => 'Producto no encontrado'
+                ]);
+                return;
+            }
+
+            $variants = $productModel->getVariants($id);
+
+            echo json_encode([
+                'ok' => true,
+                'product' => [
+                    'id' => (int)$product['id'],
+                    'name' => $product['name']
+                ],
+                'variants' => $variants
+            ]);
+        } catch (Throwable $e) {
+            http_response_code(500);
+            echo json_encode([
+                'ok' => false,
+                'msg' => 'Error al cargar variantes'
+            ]);
+        }
+    }
     // =========================================
     // ACTIVAR / DESACTIVAR
     // URL: ?c=product&a=toggle&id=#

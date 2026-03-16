@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../../db.php';
+
 class Sale
 {
     public function allForAdmin()
@@ -43,12 +45,18 @@ class Sale
 
         $sql = "SELECT
                     si.product_id,
+                    si.variant_id,
                     p.name,
+                    pv.size,
+                    pv.color,
                     si.qty,
                     si.price,
                     si.subtotal
                 FROM sale_items si
-                LEFT JOIN products p ON p.id = si.product_id
+                LEFT JOIN products p 
+                    ON p.id = si.product_id
+                LEFT JOIN product_variants pv 
+                    ON pv.id = si.variant_id
                 WHERE si.sale_id = ?";
 
         $stmt = $db->prepare($sql);
@@ -71,20 +79,105 @@ class Sale
         try {
             $db->beginTransaction();
 
-            $total  = 0;
-            $pieces = 0;
+            $total      = 0;
+            $pieces     = 0;
             $cleanItems = [];
 
             foreach ($items as $item) {
                 $productId = (int)($item['id'] ?? 0);
-                $qty       = (int)($item['qty'] ?? 0);
+                $variantId = isset($item['variant_id']) && $item['variant_id'] !== null && $item['variant_id'] !== ''
+                    ? (int)$item['variant_id']
+                    : null;
+                $qty = (int)($item['qty'] ?? 0);
 
                 if ($productId <= 0 || $qty <= 0) {
                     throw new Exception('Item inválido en carrito');
                 }
 
-                // Traer producto real
-                $stmt = $db->prepare("SELECT id, name, price, stock, active FROM products WHERE id = ? LIMIT 1");
+                // ======================================================
+                // CASO 1: PRODUCTO CON VARIANTE
+                // ======================================================
+                if ($variantId) {
+                    $stmt = $db->prepare("
+                        SELECT
+                            p.id AS product_id,
+                            p.name,
+                            p.active AS product_active,
+                            pv.id AS variant_id,
+                            pv.size,
+                            pv.color,
+                            pv.price,
+                            pv.stock,
+                            pv.active AS variant_active
+                        FROM product_variants pv
+                        INNER JOIN products p 
+                            ON p.id = pv.product_id
+                        WHERE p.id = ?
+                          AND pv.id = ?
+                        LIMIT 1
+                    ");
+                    $stmt->execute([$productId, $variantId]);
+                    $variant = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                    if (!$variant) {
+                        throw new Exception("Variante no encontrada para el producto ID {$productId}");
+                    }
+
+                    if ((int)$variant['product_active'] !== 1) {
+                        throw new Exception("El producto '{$variant['name']}' está inactivo");
+                    }
+
+                    if ((int)$variant['variant_active'] !== 1) {
+                        throw new Exception("La variante de '{$variant['name']}' está inactiva");
+                    }
+
+                    if ((int)$variant['stock'] < $qty) {
+                        $detalle = [];
+                        if (!empty($variant['size'])) {
+                            $detalle[] = $variant['size'];
+                        }
+                        if (!empty($variant['color'])) {
+                            $detalle[] = $variant['color'];
+                        }
+
+                        $nombreCompleto = $variant['name'];
+                        if (!empty($detalle)) {
+                            $nombreCompleto .= ' - ' . implode(' / ', $detalle);
+                        }
+
+                        throw new Exception("Stock insuficiente para '{$nombreCompleto}'");
+                    }
+
+                    $price = (float)$variant['price'];
+                    $subtotal = $price * $qty;
+
+                    $total  += $subtotal;
+                    $pieces += $qty;
+
+                    $cleanItems[] = [
+                        'product_id' => (int)$variant['product_id'],
+                        'variant_id' => (int)$variant['variant_id'],
+                        'name'       => $variant['name'],
+                        'size'       => $variant['size'],
+                        'color'      => $variant['color'],
+                        'qty'        => $qty,
+                        'price'      => $price,
+                        'subtotal'   => $subtotal,
+                        'is_variant' => true
+                    ];
+
+                    continue;
+                }
+
+                // ======================================================
+                // CASO 2: PRODUCTO SIMPLE
+                // ======================================================
+                $stmt = $db->prepare("
+                    SELECT id, name, price, stock, active, has_variants
+                    FROM products
+                    WHERE id = ?
+                    LIMIT 1
+                ");
                 $stmt->execute([$productId]);
                 $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -94,6 +187,10 @@ class Sale
 
                 if ((int)$product['active'] !== 1) {
                     throw new Exception("El producto '{$product['name']}' está inactivo");
+                }
+
+                if ((int)$product['has_variants'] === 1) {
+                    throw new Exception("El producto '{$product['name']}' debe venderse por variante");
                 }
 
                 if ((int)$product['stock'] < $qty) {
@@ -108,14 +205,20 @@ class Sale
 
                 $cleanItems[] = [
                     'product_id' => (int)$product['id'],
+                    'variant_id' => null,
                     'name'       => $product['name'],
+                    'size'       => null,
+                    'color'      => null,
                     'qty'        => $qty,
                     'price'      => $price,
-                    'subtotal'   => $subtotal
+                    'subtotal'   => $subtotal,
+                    'is_variant' => false
                 ];
             }
 
-            // Insertar venta principal
+            // ==========================================================
+            // INSERTAR VENTA PRINCIPAL
+            // ==========================================================
             $sqlSale = "INSERT INTO sales
                         (customer_name, customer_phone, total, status, created_at, pieces, cash_register_id, user_id)
                         VALUES (?, ?, ?, ?, NOW(), ?, ?, ?)";
@@ -133,33 +236,73 @@ class Sale
 
             $saleId = (int)$db->lastInsertId();
 
-            // Insertar detalle + descontar stock
+            // ==========================================================
+            // INSERTAR DETALLE
+            // ==========================================================
             $sqlItem = "INSERT INTO sale_items
                         (sale_id, product_id, variant_id, qty, price, subtotal)
                         VALUES (?, ?, ?, ?, ?, ?)";
 
             $stmtItem = $db->prepare($sqlItem);
 
-            $sqlStock = "UPDATE products
-                         SET stock = stock - ?
-                         WHERE id = ?";
+            $sqlStockProduct = "UPDATE products
+                                SET stock = stock - ?
+                                WHERE id = ?
+                                  AND stock >= ?";
 
-            $stmtStock = $db->prepare($sqlStock);
+            $stmtStockProduct = $db->prepare($sqlStockProduct);
+
+            $sqlStockVariant = "UPDATE product_variants
+                                SET stock = stock - ?
+                                WHERE id = ?
+                                  AND stock >= ?";
+
+            $stmtStockVariant = $db->prepare($sqlStockVariant);
 
             foreach ($cleanItems as $row) {
                 $stmtItem->execute([
                     $saleId,
                     $row['product_id'],
-                    null, // variant_id
+                    $row['variant_id'],
                     $row['qty'],
                     $row['price'],
                     $row['subtotal']
                 ]);
 
-                $stmtStock->execute([
-                    $row['qty'],
-                    $row['product_id']
-                ]);
+                if ($row['is_variant']) {
+                    $stmtStockVariant->execute([
+                        $row['qty'],
+                        $row['variant_id'],
+                        $row['qty']
+                    ]);
+
+                    if ($stmtStockVariant->rowCount() <= 0) {
+                        $detalle = [];
+                        if (!empty($row['size'])) {
+                            $detalle[] = $row['size'];
+                        }
+                        if (!empty($row['color'])) {
+                            $detalle[] = $row['color'];
+                        }
+
+                        $nombreCompleto = $row['name'];
+                        if (!empty($detalle)) {
+                            $nombreCompleto .= ' - ' . implode(' / ', $detalle);
+                        }
+
+                        throw new Exception("No se pudo descontar stock de '{$nombreCompleto}'");
+                    }
+                } else {
+                    $stmtStockProduct->execute([
+                        $row['qty'],
+                        $row['product_id'],
+                        $row['qty']
+                    ]);
+
+                    if ($stmtStockProduct->rowCount() <= 0) {
+                        throw new Exception("No se pudo descontar stock de '{$row['name']}'");
+                    }
+                }
             }
 
             $db->commit();

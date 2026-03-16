@@ -14,23 +14,23 @@ class CajaController extends Controller
     }
 
     public function index()
-{
-    $cashRegisterModel = new CashRegister();
-    $userId = (int)$_SESSION['user']['id'];
+    {
+        $cashRegisterModel = new CashRegister();
+        $userId = (int)$_SESSION['user']['id'];
 
-    $cashRegister = $cashRegisterModel->getOpenByUser($userId);
-    $summary = null;
+        $cashRegister = $cashRegisterModel->getOpenByUser($userId);
+        $summary = null;
 
-    if ($cashRegister) {
-        $summary = $cashRegisterModel->getSalesSummary((int)$cashRegister['id']);
+        if ($cashRegister) {
+            $summary = $cashRegisterModel->getSalesSummary((int)$cashRegister['id']);
+        }
+
+        $this->render('admin/caja', [
+            'title' => 'Caja',
+            'cashRegister' => $cashRegister,
+            'summary' => $summary
+        ], 'admin');
     }
-
-    $this->render('admin/caja', [
-        'title' => 'Caja',
-        'cashRegister' => $cashRegister,
-        'summary' => $summary
-    ], 'admin');
-}
 
     public function abrir()
     {
@@ -94,7 +94,9 @@ class CajaController extends Controller
         ], 'admin');
     }
 
+    // =========================================
     // AJAX: buscar producto por barcode
+    // =========================================
     public function buscarProducto()
     {
         header('Content-Type: application/json; charset=utf-8');
@@ -118,20 +120,47 @@ class CajaController extends Controller
                 return;
             }
 
+            $nombre = $product['name'];
+            if (!empty($product['variant_id'])) {
+                $parts = [];
+                if (!empty($product['size'])) {
+                    $parts[] = $product['size'];
+                }
+                if (!empty($product['color'])) {
+                    $parts[] = $product['color'];
+                }
+                if (!empty($parts)) {
+                    $nombre .= ' - ' . implode(' / ', $parts);
+                }
+            }
+
             echo json_encode([
                 'ok' => true,
                 'producto' => [
-                    'id'     => (int)$product['id'],
-                    'nombre' => $product['name'],
-                    'precio' => (float)$product['price']
+                    'id'           => (int)$product['id'],
+                    'variant_id'   => !empty($product['variant_id']) ? (int)$product['variant_id'] : null,
+                    'nombre'       => $nombre,
+                    'nombre_base'  => $product['name'],
+                    'precio'       => (float)$product['price'],
+                    'stock'        => (int)$product['stock'],
+                    'size'         => $product['size'] ?? null,
+                    'color'        => $product['color'] ?? null,
+                    'barcode'      => $product['barcode'] ?? null,
+                    'has_variants' => !empty($product['has_variants']) ? 1 : 0
                 ]
             ]);
         } catch (Throwable $e) {
-            echo json_encode(['ok' => false, 'msg' => 'Error servidor']);
+            http_response_code(500);
+            echo json_encode([
+                'ok' => false,
+                'msg' => 'Error servidor'
+            ]);
         }
     }
 
+    // =========================================
     // AJAX: registrar venta
+    // =========================================
     public function cobrar()
     {
         header('Content-Type: application/json; charset=utf-8');
@@ -159,8 +188,23 @@ class CajaController extends Controller
                 return;
             }
 
-            // aquí mandamos caja y usuario a la venta
-            $result = Sale::createFromItems($items, [
+            // Normalizar items para soportar variantes
+            $normalizedItems = [];
+
+            foreach ($items as $item) {
+                $normalizedItems[] = [
+                    'id'          => (int)($item['id'] ?? 0),
+                    'variant_id'  => isset($item['variant_id']) && $item['variant_id'] !== '' ? (int)$item['variant_id'] : null,
+                    'nombre'      => (string)($item['nombre'] ?? ''),
+                    'precio'      => (float)($item['precio'] ?? 0),
+                    'qty'         => max(1, (int)($item['qty'] ?? 1)),
+                    'size'        => $item['size'] ?? null,
+                    'color'       => $item['color'] ?? null,
+                    'barcode'     => $item['barcode'] ?? null
+                ];
+            }
+
+            $result = Sale::createFromItems($normalizedItems, [
                 'cash_register_id' => (int)$cashRegister['id'],
                 'user_id' => $userId
             ]);
@@ -170,7 +214,6 @@ class CajaController extends Controller
                 'id_venta' => (int)$result['id_venta'],
                 'ticket_html' => $result['ticket_html'] ?? ''
             ]);
-
         } catch (Throwable $e) {
             http_response_code(400);
             echo json_encode([

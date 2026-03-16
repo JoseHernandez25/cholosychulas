@@ -7,8 +7,21 @@
   const URL_COBRAR = window.POS_CFG.URL_COBRAR;
   const CAJA_ABIERTA = !!window.POS_CFG.CAJA_ABIERTA;
 
-  let carrito = []; // {id, nombre, precio, qty}
-  let selectedId = null;
+  // carrito item:
+  // {
+  //   id,
+  //   variant_id,
+  //   nombre,
+  //   nombre_base,
+  //   precio,
+  //   qty,
+  //   size,
+  //   color,
+  //   barcode,
+  //   has_variants
+  // }
+  let carrito = [];
+  let selectedKey = null;
   let lastTicketHtml = '';
 
   const scanInput   = document.getElementById('scanInput');
@@ -43,7 +56,7 @@
   }
 
   function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, m => ({
+    return String(s ?? '').replace(/[&<>"']/g, m => ({
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
@@ -74,6 +87,17 @@
   function ok()  { beep(820, 0.05); }
   function bad() { beep(220, 0.08); beep(180, 0.08, 0.09); }
 
+  function getItemKey(item) {
+    return item.variant_id ? ('v-' + item.variant_id) : ('p-' + item.id);
+  }
+
+  function getDisplayMeta(item) {
+    const parts = [];
+    if (item.size) parts.push(item.size);
+    if (item.color) parts.push(item.color);
+    return parts.join(' / ');
+  }
+
   function render() {
     if (!tbody) return;
 
@@ -97,20 +121,28 @@
     let pzas = 0;
 
     tbody.innerHTML = carrito.map(it => {
-      const sub = it.precio * it.qty;
+      const sub = Number(it.precio) * Number(it.qty);
       total += sub;
-      pzas += it.qty;
+      pzas += Number(it.qty);
 
-      const sel = (it.id === selectedId) ? 'pos-row sel' : 'pos-row';
+      const rowKey = getItemKey(it);
+      const sel = (rowKey === selectedKey) ? 'pos-row sel' : 'pos-row';
+      const meta = getDisplayMeta(it);
 
       return `
-        <tr class="${sel}" data-id="${it.id}">
-          <td><b>${escapeHtml(it.nombre)}</b><div class="muted">ID: ${it.id}</div></td>
+        <tr class="${sel}" data-key="${escapeHtml(rowKey)}">
+          <td>
+            <b>${escapeHtml(it.nombre_base || it.nombre)}</b>
+            ${meta ? `<div class="muted">${escapeHtml(meta)}</div>` : ''}
+            <div class="muted">
+              ${it.variant_id ? `Variante: ${it.variant_id}` : `ID: ${it.id}`}
+            </div>
+          </td>
           <td class="r">${money(it.precio)}</td>
           <td class="r">${it.qty}</td>
           <td class="r"><b>${money(sub)}</b></td>
           <td class="r">
-            <button class="pos-btn danger" data-del="${it.id}" type="button">Borrar</button>
+            <button class="pos-btn danger" data-del="${escapeHtml(rowKey)}" type="button">Borrar</button>
           </td>
         </tr>
       `;
@@ -120,9 +152,9 @@
     if (itemsTxt) itemsTxt.textContent = String(carrito.length);
     if (pzasTxt)  pzasTxt.textContent  = String(pzas);
 
-    tbody.querySelectorAll('tr[data-id]').forEach(tr => {
+    tbody.querySelectorAll('tr[data-key]').forEach(tr => {
       tr.addEventListener('click', () => {
-        selectedId = Number(tr.dataset.id);
+        selectedKey = tr.dataset.key;
         render();
         focusScan();
       });
@@ -131,9 +163,11 @@
     tbody.querySelectorAll('button[data-del]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const id = Number(btn.dataset.del);
-        carrito = carrito.filter(x => x.id !== id);
-        selectedId = carrito.length ? carrito[carrito.length - 1].id : null;
+        const key = btn.dataset.del;
+
+        carrito = carrito.filter(x => getItemKey(x) !== key);
+        selectedKey = carrito.length ? getItemKey(carrito[carrito.length - 1]) : null;
+
         render();
         focusScan();
       });
@@ -167,12 +201,30 @@
       }
 
       const p = data.producto;
-      const item = carrito.find(x => x.id === p.id);
 
-      if (item) item.qty += 1;
-      else carrito.push({ id: p.id, nombre: p.nombre, precio: Number(p.precio), qty: 1 });
+      const newItem = {
+        id: Number(p.id),
+        variant_id: p.variant_id ? Number(p.variant_id) : null,
+        nombre: p.nombre,
+        nombre_base: p.nombre_base || p.nombre,
+        precio: Number(p.precio),
+        qty: 1,
+        size: p.size || null,
+        color: p.color || null,
+        barcode: p.barcode || null,
+        has_variants: Number(p.has_variants || 0)
+      };
 
-      selectedId = p.id;
+      const key = getItemKey(newItem);
+      const item = carrito.find(x => getItemKey(x) === key);
+
+      if (item) {
+        item.qty += 1;
+      } else {
+        carrito.push(newItem);
+      }
+
+      selectedKey = key;
       render();
       setStatus('Agregado: ' + p.nombre, 'ok');
       ok();
@@ -204,7 +256,16 @@
       setStatus('Registrando venta…', '');
 
       const payload = {
-        items: carrito.map(x => ({ id: x.id, qty: x.qty }))
+        items: carrito.map(x => ({
+          id: x.id,
+          variant_id: x.variant_id,
+          nombre: x.nombre,
+          precio: x.precio,
+          qty: x.qty,
+          size: x.size,
+          color: x.color,
+          barcode: x.barcode
+        }))
       };
 
       const res = await fetch(URL_COBRAR, {
@@ -224,28 +285,28 @@
       }
 
       if (saleInfo) saleInfo.textContent = 'Última venta: #' + data.id_venta;
-          lastTicketHtml = data.ticket_html || '';
+      lastTicketHtml = data.ticket_html || '';
 
-          carrito = [];
-          selectedId = null;
-          render();
-          setStatus('Venta registrada', 'ok');
-          ok();
+      carrito = [];
+      selectedKey = null;
+      render();
+      setStatus('Venta registrada', 'ok');
+      ok();
 
-          // recargar para refrescar resumen de caja
-          setTimeout(() => {
-            window.location.reload();
-          }, 700);
+      // recargar para refrescar resumen de caja
+      setTimeout(() => {
+        window.location.reload();
+      }, 700);
 
-              } catch (err) {
-                console.error(err);
-                if (pillConn) pillConn.textContent = 'Error';
-                setStatus('Error al cobrar', 'bad');
-                bad();
-              } finally {
-                focusScan();
-              }
-            }
+    } catch (err) {
+      console.error(err);
+      if (pillConn) pillConn.textContent = 'Error';
+      setStatus('Error al cobrar', 'bad');
+      bad();
+    } finally {
+      focusScan();
+    }
+  }
 
   function printTicket() {
     if (!CAJA_ABIERTA) {
@@ -273,7 +334,7 @@
     }
 
     carrito = [];
-    selectedId = null;
+    selectedKey = null;
     render();
     setStatus('Carrito vacío', 'warn');
     focusScan();

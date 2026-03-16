@@ -5,38 +5,39 @@ require_once __DIR__ . '/../models/Sale.php';
 
 class SaleController extends Controller
 {
+    public function __construct()
+    {
+        $this->requireLogin();
+    }
 
-public function index()
-{
+    public function index()
+    {
+        $saleModel = new Sale();
+        $sales = $saleModel->allForAdmin();
 
-$saleModel = new Sale();
+        $this->render('admin/sales', compact('sales'), 'admin');
+    }
 
-$sales = $saleModel->allForAdmin();
+    public function show()
+    {
+        $id = (int)($_GET['id'] ?? 0);
 
-$this->render('admin/sales', compact('sales'), 'admin');
+        if ($id <= 0) {
+            header("Location: ?c=sale&a=index");
+            exit;
+        }
 
-}
+        $saleModel = new Sale();
 
+        $sale = $saleModel->findForAdmin($id);
 
-public function show()
-{
+        if (!$sale) {
+            header("Location: ?c=sale&a=index");
+            exit;
+        }
 
-$id = $_GET['id'] ?? null;
+        $items = $saleModel->itemsBySale($id);
 
-if(!$id)
-{
-header("Location: ?c=sale&a=index");
-exit;
-}
-
-$saleModel = new Sale();
-
-$sale = $saleModel->findForAdmin($id);
-
-$items = $saleModel->itemsBySale($id);
-
-$this->render('admin/sale_show', compact('sale','items'),'admin');
-
-}
-
+        $this->render('admin/sale_show', compact('sale', 'items'), 'admin');
+    }
 }

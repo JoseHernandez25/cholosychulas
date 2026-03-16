@@ -2,19 +2,22 @@
 $currentC = strtolower($_GET['c'] ?? '');
 $currentA = strtolower($_GET['a'] ?? '');
 
-$isCajaIndex    = ($currentC === 'caja'   && $currentA === 'index');
-$isCajaAbrir    = ($currentC === 'caja'   && $currentA === 'abrir');
-$isCajaCerrar   = ($currentC === 'caja'   && $currentA === 'cerrar');
+$isCajaIndex    = ($currentC === 'caja'    && $currentA === 'index');
+$isCajaAbrir    = ($currentC === 'caja'    && $currentA === 'abrir');
+$isCajaCerrar   = ($currentC === 'caja'    && $currentA === 'cerrar');
 
-$isSaleIndex    = ($currentC === 'sale'   && $currentA === 'index');
+$isSaleIndex    = ($currentC === 'sale'    && $currentA === 'index');
 
 $isProductIndex = ($currentC === 'product' && $currentA === 'index');
 $isProductForm  = ($currentC === 'product' && in_array($currentA, ['create', 'edit'], true));
+
+$isLabelIndex   = ($currentC === 'label'   && $currentA === 'index');
 ?>
 <aside class="admin-sidebar" id="adminSidebar">
   <div class="admin-sidebar-brand">
-  <img src="assets/imgs/logo2.webp" alt="Cholos & Chulas" class="admin-sidebar-logo">
-</div>
+    <img src="assets/imgs/logo2.webp" alt="Cholos & Chulas" class="admin-sidebar-logo">
+  </div>
+
   <nav class="admin-nav">
     <div class="nav-section">Caja</div>
 
@@ -45,6 +48,11 @@ $isProductForm  = ($currentC === 'product' && in_array($currentA, ['create', 'ed
     <a class="nav-link<?php echo $isProductIndex ? ' active' : ''; ?>" href="?c=product&a=index" title="Existencias">
       <span class="menu-icon">📦</span>
       <span class="menu-text">Existencias</span>
+    </a>
+
+    <a class="nav-link<?php echo $isLabelIndex ? ' active' : ''; ?>" href="?c=label&a=index" title="Etiquetas">
+      <span class="menu-icon">🏷️</span>
+      <span class="menu-text">Etiquetas</span>
     </a>
 
     <div class="nav-section">Productos</div>

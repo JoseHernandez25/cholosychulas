@@ -68,22 +68,23 @@ $baseUrl = $config['app']['base_url'];
             width:100%;
             max-width:420px;
             background:linear-gradient(180deg, rgba(20,24,32,.96) 0%, rgba(15,19,27,.98) 100%);
-            padding:28px 28px 24px;
+            padding:22px 28px 24px;
             border-radius:22px;
             border:1px solid rgba(255,255,255,.06);
             box-shadow:
                 0 18px 60px rgba(0,0,0,.45),
                 inset 0 1px 0 rgba(255,255,255,.03);
-        }
+            transform:translateY(-26px);
+    }
 
-        .login-brand{
-            display:flex;
-            align-items:center;
-            gap:14px;
-            margin-bottom:22px;
-            text-align:left;
-        }
-
+	.login-brand{
+    		display:flex;
+    		align-items:center;
+    		gap:10px;
+    		margin-bottom:14px;
+    		text-align:left;
+	}
+	
         .login-brand-center{
             flex-direction:column;
             justify-content:center;
@@ -119,16 +120,16 @@ $baseUrl = $config['app']['base_url'];
         }
 
         .brand-copy p{
-            margin:10px 0 0;
-            font-size:11px;
-            color:rgba(255,255,255,.62);
-            text-transform:uppercase;
-            letter-spacing:1.2px;
-        }
+    		margin:6px 0 0;
+    		font-size:11px;
+    		color:rgba(255,255,255,.62);
+    		text-transform:uppercase;
+    		letter-spacing:1.2px;
+	}
 
         .login-head{
             text-align:left;
-            margin-bottom:18px;
+            margin-bottom:14px;
         }
 
         .login-head h2{
@@ -242,24 +243,23 @@ $baseUrl = $config['app']['base_url'];
             transform:translateY(0);
         }
 
-        @media (max-width: 520px){
-            body{
-                padding:16px;
-            }
+       @media (max-width: 520px){
+    		body{
+        		padding:16px;
+        		align-items:flex-start;
+    		}			
 
-            .login-box{
-                padding:22px 18px 18px;
-                border-radius:18px;
-            }
+    	.login-box{
+        	padding:20px 18px 18px;
+        	border-radius:18px;
+       	 	transform:none;
+        	margin-top:18px;
+    	}
 
-            .brand-copy h1{
-                font-size:31px;
-            }
-
-            .login-head h2{
-                font-size:20px;
-            }
-        }
+    	.login-head h2{
+        	font-size:20px;
+    	}
+}
     </style>
 </head>
 <body>
