@@ -12,6 +12,7 @@ class AuthController extends Controller
             exit;
         }
 
+        $title = 'Iniciar sesión | Cholos & Chulas';
         $error = null;
 
         // Si viene POST, procesa aquí mismo (ya no uses doLogin aparte)

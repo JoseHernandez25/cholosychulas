@@ -15,7 +15,10 @@ class SaleController extends Controller
         $saleModel = new Sale();
         $sales = $saleModel->allForAdmin();
 
-        $this->render('admin/sales', compact('sales'), 'admin');
+        $this->render('admin/sales', [
+            'title' => 'Ver ventas | Cholos & Chulas',
+            'sales' => $sales
+        ], 'admin');
     }
 
     public function show()
@@ -28,7 +31,6 @@ class SaleController extends Controller
         }
 
         $saleModel = new Sale();
-
         $sale = $saleModel->findForAdmin($id);
 
         if (!$sale) {
@@ -38,6 +40,10 @@ class SaleController extends Controller
 
         $items = $saleModel->itemsBySale($id);
 
-        $this->render('admin/sale_show', compact('sale', 'items'), 'admin');
+        $this->render('admin/sale_show', [
+            'title' => 'Detalle de venta | Cholos & Chulas',
+            'sale'  => $sale,
+            'items' => $items
+        ], 'admin');
     }
 }

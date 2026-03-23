@@ -12,6 +12,7 @@ $isProductIndex = ($currentC === 'product' && $currentA === 'index');
 $isProductForm  = ($currentC === 'product' && in_array($currentA, ['create', 'edit'], true));
 
 $isLabelIndex   = ($currentC === 'label'   && $currentA === 'index');
+$isCategoryIndex = ($currentC === 'category' && $currentA === 'index');
 ?>
 <aside class="admin-sidebar" id="adminSidebar">
   <div class="admin-sidebar-brand">
@@ -56,10 +57,15 @@ $isLabelIndex   = ($currentC === 'label'   && $currentA === 'index');
     </a>
 
     <div class="nav-section">Productos</div>
-
     <a class="nav-link<?php echo $isProductForm ? ' active' : ''; ?>" href="?c=product&a=create" title="Registrar producto">
       <span class="menu-icon">➕</span>
       <span class="menu-text">Registrar producto</span>
     </a>
+    
+    <div class="nav-section">Catálogos</div>
+      <a class="nav-link<?php echo $isCategoryIndex ? ' active' : ''; ?>" href="?c=category&a=index" title="Categorías">
+        <span class="menu-icon">🗂️</span>
+        <span class="menu-text">Categorías</span>
+      </a>
   </nav>
 </aside>

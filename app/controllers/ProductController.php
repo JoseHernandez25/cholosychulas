@@ -24,7 +24,12 @@ class ProductController extends Controller
         $success = !empty($_GET['ok']);
         $error   = $_GET['err'] ?? '';
 
-        $this->render('admin/products', compact('products', 'success', 'error'), 'admin');
+        $this->render('admin/products', [
+            'title'   => 'Existencias | Cholos & Chulas',
+            'products'=> $products,
+            'success' => $success,
+            'error'   => $error
+        ], 'admin');
     }
 
     // =========================================
@@ -43,7 +48,14 @@ class ProductController extends Controller
 
         $this->render(
             'admin/product_form',
-            compact('categories', 'editProduct', 'variants', 'success', 'error'),
+            [
+                'title'      => 'Registrar producto | Cholos & Chulas',
+                'categories' => $categories,
+                'editProduct'=> $editProduct,
+                'variants'   => $variants,
+                'success'    => $success,
+                'error'      => $error
+            ],
             'admin'
         );
     }
@@ -71,7 +83,14 @@ class ProductController extends Controller
 
         $this->render(
             'admin/product_form',
-            compact('categories', 'editProduct', 'variants', 'success', 'error'),
+            [
+                'title'      => 'Editar producto | Cholos & Chulas',
+                'categories' => $categories,
+                'editProduct'=> $editProduct,
+                'variants'   => $variants,
+                'success'    => $success,
+                'error'      => $error
+            ],
             'admin'
         );
     }
@@ -86,15 +105,44 @@ class ProductController extends Controller
 
         $id            = $_POST['id'] ?? null;
         $name          = trim($_POST['name'] ?? '');
-        $price         = $_POST['price'] ?? '';
         $category_id   = $_POST['category_id'] ?? null;
-        $stock         = $_POST['stock'] ?? 0;
         $description   = trim($_POST['description'] ?? '');
-        $sort_order    = $_POST['sort_order'] ?? null;
         $active        = isset($_POST['active']) ? 1 : 0;
         $has_variants  = isset($_POST['has_variants']) ? 1 : 0;
         $current_image = $_POST['current_image'] ?? '';
         $variants      = $_POST['variants'] ?? [];
+
+        $stock      = ($_POST['stock'] ?? '') !== '' ? (int)$_POST['stock'] : 0;
+        $sort_order = ($_POST['sort_order'] ?? '') !== '' ? (int)$_POST['sort_order'] : null;
+
+        // Precio general normal
+        $price = ($_POST['price'] ?? '') !== '' ? (float)$_POST['price'] : 0;
+
+        // Si tiene variantes, tomar el precio de la primera variante con precio
+        if ($has_variants) {
+            $price = null;
+
+            if (!empty($variants)) {
+                foreach ($variants as $v) {
+                    if (($v['price'] ?? '') !== '') {
+                        $price = (float)$v['price'];
+                        break;
+                    }
+                }
+            }
+
+            if ($price === null) {
+                $err = urlencode('Debes capturar precio en al menos una variante');
+                header("Location: ?c=product&a=create&err={$err}");
+                exit;
+            }
+        } else {
+            if ($price <= 0) {
+                $err = urlencode('Debes capturar el precio general del producto');
+                header("Location: ?c=product&a=create&err={$err}");
+                exit;
+            }
+        }
 
         if ($name === '' || !$category_id) {
             $err = urlencode('Nombre y categoría son obligatorios');
@@ -147,6 +195,7 @@ class ProductController extends Controller
 
         exit;
     }
+
     public function variants()
     {
         header('Content-Type: application/json; charset=utf-8');
@@ -190,6 +239,7 @@ class ProductController extends Controller
             ]);
         }
     }
+
     // =========================================
     // ACTIVAR / DESACTIVAR
     // URL: ?c=product&a=toggle&id=#

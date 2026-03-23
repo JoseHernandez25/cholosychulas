@@ -6,8 +6,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?= htmlspecialchars($title ?? 'Admin') ?></title>
-
+  <title><?= htmlspecialchars($title ?? 'Cholos & Chulas | Panel Admin') ?></title>
+    <link rel="icon" type="image/webp" href="<?= $base_url ?>assets/imgs/logo2.webp">
+  <link rel="shortcut icon" href="<?= $base_url ?>assets/imgs/logo2.webp">
   <link rel="stylesheet" href="<?= $base_url ?>assets/css/pos.css?v=<?= time() ?>">
   <link rel="stylesheet" href="<?= $base_url ?>assets/css/admin.css?v=<?= time() ?>">
 </head>

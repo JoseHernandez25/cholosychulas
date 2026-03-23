@@ -26,7 +26,7 @@ class CajaController extends Controller
         }
 
         $this->render('admin/caja', [
-            'title' => 'Caja',
+            'title' =>'Caja | Cholos & Chulas',
             'cashRegister' => $cashRegister,
             'summary' => $summary
         ], 'admin');
@@ -54,7 +54,7 @@ class CajaController extends Controller
         }
 
         $this->render('admin/caja_abrir', [
-            'title' => 'Abrir caja'
+            'title' => 'Abrir caja | Cholos & Chulas'
         ], 'admin');
     }
 
@@ -88,7 +88,7 @@ class CajaController extends Controller
         }
 
         $this->render('admin/caja_cerrar', [
-            'title' => 'Cerrar caja',
+            'title' => 'Cerrar / Corte | Cholos & Chulas',
             'cashRegister' => $cashRegister,
             'summary' => $summary
         ], 'admin');
@@ -106,7 +106,7 @@ class CajaController extends Controller
             echo json_encode(['ok' => false, 'msg' => 'Barcode vacío']);
             return;
         }
-
+        
         try {
             $product = Product::findByBarcode($barcode);
 
@@ -156,6 +156,7 @@ class CajaController extends Controller
                 'msg' => 'Error servidor'
             ]);
         }
+        
     }
 
     // =========================================

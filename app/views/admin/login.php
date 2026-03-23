@@ -7,7 +7,9 @@ $baseUrl = $config['app']['base_url'];
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Login</title>
+    <title><?= htmlspecialchars($title ?? 'Iniciar sesión | Cholos & Chulas') ?></title>
+      <link rel="icon" type="image/webp" href="<?= $baseUrl ?>assets/imgs/logo2.webp">
+<link rel="shortcut icon" href="<?= $baseUrl ?>assets/imgs/logo2.webp">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         @font-face {

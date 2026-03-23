@@ -344,11 +344,13 @@ document.addEventListener('DOMContentLoaded', function () {
   const generalStockWrap = document.getElementById('general-stock-wrap');
   const addVariantBtn = document.getElementById('add-variant-btn');
   const variantsTableBody = document.querySelector('#variants-table tbody');
+const generalPriceWrap = document.getElementById('general-price-wrap');
 
   function toggleVariantMode() {
     const enabled = hasVariants.checked;
     variantsBlock.style.display = enabled ? 'block' : 'none';
     generalStockWrap.style.display = enabled ? 'none' : 'block';
+    generalPriceWrap.style.display = enabled ? 'none' : 'block';
   }
 
   function getNextIndex() {

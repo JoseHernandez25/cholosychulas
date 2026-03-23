@@ -17,7 +17,7 @@ class LabelController extends Controller
         $labels = $productModel->allLabelsForAdmin();
 
         $this->render('admin/labels', [
-            'title'  => 'Etiquetas',
+            'title'  => 'Etiquetas | Cholos & Chulas',
             'labels' => $labels
         ], 'admin');
     }

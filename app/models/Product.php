@@ -280,105 +280,51 @@ class Product
 
     // ==========================================================
     // ✅ SAVE (INSERT/UPDATE)
-    // Producto simple => barcode CC-000001
-    // Variante => barcode CCV-000001
+    // Producto simple => barcode CC000001
+    // Variante => barcode CC1000001
     // ==========================================================
-public function save(array $data): bool
-{
-    $isNew = empty($data['id']);
-    $hasVariants = !empty($data['has_variants']) ? 1 : 0;
-    $variants = $data['variants'] ?? [];
+    public function save(array $data): bool
+    {
+        $isNew = empty($data['id']);
+        $hasVariants = !empty($data['has_variants']) ? 1 : 0;
+        $variants = $data['variants'] ?? [];
 
-    $this->db->beginTransaction();
+        $this->db->beginTransaction();
 
-    try {
-        $barcode = null;
+        try {
+            $barcode = null;
 
-        // ==========================================================
-        // PRODUCTO PRINCIPAL
-        // ==========================================================
-        if ($isNew && !$hasVariants) {
-            $barcode = $this->nextBarcodeCC();
-        }
-
-        if ($isNew) {
-            $stmt = $this->db->prepare("
-                INSERT INTO products
-                (name, price, has_variants, category_id, stock, description, sort_order, active, image_url, barcode)
-                VALUES
-                (:name, :price, :has_variants, :category_id, :stock, :description, :sort_order, :active, :image_url, :barcode)
-            ");
-
-            $stmt->execute([
-                ':name'         => $data['name'],
-                ':price'        => $data['price'] !== '' ? $data['price'] : null,
-                ':has_variants' => $hasVariants,
-                ':category_id'  => $data['category_id'],
-                ':stock'        => $hasVariants ? 0 : (int)($data['stock'] ?? 0),
-                ':description'  => $data['description'] ?? '',
-                ':sort_order'   => $data['sort_order'] ?? 0,
-                ':active'       => $data['active'] ?? 0,
-                ':image_url'    => $data['image_url'] ?? '',
-                ':barcode'      => $barcode,
-            ]);
-
-            $productId = (int)$this->db->lastInsertId();
-
-            if (!$hasVariants && $barcode) {
-                $relative = "assets/imgs/barcodes/{$barcode}.png";
-                $absolute = __DIR__ . "/../../" . $relative;
-
-                $this->createBarcodePng($barcode, $absolute);
-
-                $up = $this->db->prepare("
-                    UPDATE products
-                    SET barcode_path = :p
-                    WHERE id = :id
-                ");
-                $up->execute([
-                    ':p'  => $relative,
-                    ':id' => $productId
-                ]);
+            // ==========================================================
+            // PRODUCTO PRINCIPAL
+            // ==========================================================
+            if ($isNew && !$hasVariants) {
+                $barcode = $this->nextBarcodeCC();
             }
 
-        } else {
-            $productId = (int)$data['id'];
+            if ($isNew) {
+                $stmt = $this->db->prepare("
+                    INSERT INTO products
+                    (name, price, has_variants, category_id, stock, description, sort_order, active, image_url, barcode)
+                    VALUES
+                    (:name, :price, :has_variants, :category_id, :stock, :description, :sort_order, :active, :image_url, :barcode)
+                ");
 
-            $stmt = $this->db->prepare("
-                UPDATE products SET
-                    name = :name,
-                    price = :price,
-                    has_variants = :has_variants,
-                    category_id = :category_id,
-                    stock = :stock,
-                    description = :description,
-                    sort_order = :sort_order,
-                    active = :active,
-                    image_url = :image_url,
-                    barcode = CASE WHEN :has_variants = 1 THEN NULL ELSE barcode END,
-                    barcode_path = CASE WHEN :has_variants = 1 THEN NULL ELSE barcode_path END
-                WHERE id = :id
-            ");
+                $stmt->execute([
+                    ':name'         => $data['name'],
+                    ':price'        => $data['price'] !== '' ? $data['price'] : null,
+                    ':has_variants' => $hasVariants,
+                    ':category_id'  => $data['category_id'],
+                    ':stock'        => $hasVariants ? 0 : (int)($data['stock'] ?? 0),
+                    ':description'  => $data['description'] ?? '',
+                    ':sort_order'   => $data['sort_order'] ?? 0,
+                    ':active'       => $data['active'] ?? 0,
+                    ':image_url'    => $data['image_url'] ?? '',
+                    ':barcode'      => $barcode,
+                ]);
 
-            $stmt->execute([
-                ':id'           => $productId,
-                ':name'         => $data['name'],
-                ':price'        => $data['price'] !== '' ? $data['price'] : null,
-                ':has_variants' => $hasVariants,
-                ':category_id'  => $data['category_id'],
-                ':stock'        => $hasVariants ? 0 : (int)($data['stock'] ?? 0),
-                ':description'  => $data['description'] ?? '',
-                ':sort_order'   => $data['sort_order'] ?? 0,
-                ':active'       => $data['active'] ?? 0,
-                ':image_url'    => $data['image_url'] ?? '',
-            ]);
+                $productId = (int)$this->db->lastInsertId();
 
-            if (!$hasVariants) {
-                $product = $this->find($productId);
-
-                if (empty($product['barcode'])) {
-                    $barcode = $this->nextBarcodeCC();
-
+                if (!$hasVariants && $barcode) {
                     $relative = "assets/imgs/barcodes/{$barcode}.png";
                     $absolute = __DIR__ . "/../../" . $relative;
 
@@ -386,100 +332,155 @@ public function save(array $data): bool
 
                     $up = $this->db->prepare("
                         UPDATE products
-                        SET barcode = :barcode,
-                            barcode_path = :barcode_path
+                        SET barcode_path = :p
                         WHERE id = :id
                     ");
                     $up->execute([
-                        ':barcode'      => $barcode,
-                        ':barcode_path' => $relative,
-                        ':id'           => $productId
+                        ':p'  => $relative,
+                        ':id' => $productId
                     ]);
                 }
-            }
-        }
 
-        // ==========================================================
-        // VARIANTES
-        // Mantener barcode e id si la variante ya existía
-        // ==========================================================
-        if (!$hasVariants) {
-            // Si ya no tiene variantes, eliminarlas todas
-            $this->deleteVariants($productId);
-        } else {
-            $keepIds = [];
+            } else {
+                $productId = (int)$data['id'];
 
-            foreach ($variants as $variant) {
-                $variantId = isset($variant['id']) && $variant['id'] !== '' ? (int)$variant['id'] : 0;
-                $size      = trim($variant['size'] ?? '');
-                $color     = trim($variant['color'] ?? '');
+                $stmt = $this->db->prepare("
+                    UPDATE products SET
+                        name = :name,
+                        price = :price,
+                        has_variants = :has_variants,
+                        category_id = :category_id,
+                        stock = :stock,
+                        description = :description,
+                        sort_order = :sort_order,
+                        active = :active,
+                        image_url = :image_url,
+                        barcode = CASE WHEN :has_variants = 1 THEN NULL ELSE barcode END,
+                        barcode_path = CASE WHEN :has_variants = 1 THEN NULL ELSE barcode_path END
+                    WHERE id = :id
+                ");
 
-                // fila vacía
-                if ($size === '' && $color === '') {
-                    continue;
-                }
-
-                // Si ya existe: actualizar y conservar barcode
-                if ($variantId > 0) {
-                    $existing = $this->findVariantById($variantId, $productId);
-
-                    if ($existing) {
-                        $this->updateVariant([
-                            'id'         => $variantId,
-                            'product_id' => $productId,
-                            'size'       => $size,
-                            'color'      => $color,
-                            'price'      => $variant['price'] ?? null,
-                            'stock'      => $variant['stock'] ?? 0,
-                            'active'     => isset($variant['active']) ? 1 : 0,
-                        ]);
-
-                        $keepIds[] = $variantId;
-                        continue;
-                    }
-                }
-
-                // Si es nueva: generar barcode nuevo
-                $variantBarcode = $this->nextVariantBarcodeCC();
-                $relative = "assets/imgs/barcodes/{$variantBarcode}.png";
-                $absolute = __DIR__ . "/../../" . $relative;
-
-                $this->createBarcodePng($variantBarcode, $absolute);
-
-                $this->insertVariant([
-                    'product_id'   => $productId,
-                    'size'         => $size,
-                    'color'        => $color,
-                    'price'        => $variant['price'] ?? null,
-                    'stock'        => $variant['stock'] ?? 0,
-                    'barcode'      => $variantBarcode,
-                    'barcode_path' => $relative,
-                    'active'       => isset($variant['active']) ? 1 : 0,
+                $stmt->execute([
+                    ':id'           => $productId,
+                    ':name'         => $data['name'],
+                    ':price'        => $data['price'] !== '' ? $data['price'] : null,
+                    ':has_variants' => $hasVariants,
+                    ':category_id'  => $data['category_id'],
+                    ':stock'        => $hasVariants ? 0 : (int)($data['stock'] ?? 0),
+                    ':description'  => $data['description'] ?? '',
+                    ':sort_order'   => $data['sort_order'] ?? 0,
+                    ':active'       => $data['active'] ?? 0,
+                    ':image_url'    => $data['image_url'] ?? '',
                 ]);
 
-                $keepIds[] = (int)$this->db->lastInsertId();
+                if (!$hasVariants) {
+                    $product = $this->find($productId);
+
+                    if (empty($product['barcode'])) {
+                        $barcode = $this->nextBarcodeCC();
+
+                        $relative = "assets/imgs/barcodes/{$barcode}.png";
+                        $absolute = __DIR__ . "/../../" . $relative;
+
+                        $this->createBarcodePng($barcode, $absolute);
+
+                        $up = $this->db->prepare("
+                            UPDATE products
+                            SET barcode = :barcode,
+                                barcode_path = :barcode_path
+                            WHERE id = :id
+                        ");
+                        $up->execute([
+                            ':barcode'      => $barcode,
+                            ':barcode_path' => $relative,
+                            ':id'           => $productId
+                        ]);
+                    }
+                }
             }
 
-            // Borrar solo las variantes que ya no vinieron en el form
-            $this->deleteVariantsExcept($productId, $keepIds);
+            // ==========================================================
+            // VARIANTES
+            // Mantener barcode e id si la variante ya existía
+            // ==========================================================
+            if (!$hasVariants) {
+                // Si ya no tiene variantes, eliminarlas todas
+                $this->deleteVariants($productId);
+            } else {
+                $keepIds = [];
+
+                foreach ($variants as $variant) {
+                    $variantId = isset($variant['id']) && $variant['id'] !== '' ? (int)$variant['id'] : 0;
+                    $size      = trim($variant['size'] ?? '');
+                    $color     = trim($variant['color'] ?? '');
+
+                    // fila vacía
+                    if ($size === '' && $color === '') {
+                        continue;
+                    }
+
+                    // Si ya existe: actualizar y conservar barcode
+                    if ($variantId > 0) {
+                        $existing = $this->findVariantById($variantId, $productId);
+
+                        if ($existing) {
+                            $this->updateVariant([
+                                'id'         => $variantId,
+                                'product_id' => $productId,
+                                'size'       => $size,
+                                'color'      => $color,
+                                'price'      => $variant['price'] ?? null,
+                                'stock'      => $variant['stock'] ?? 0,
+                                'active'     => isset($variant['active']) ? 1 : 0,
+                            ]);
+
+                            $keepIds[] = $variantId;
+                            continue;
+                        }
+                    }
+
+                    // Si es nueva: generar barcode nuevo
+                    $variantBarcode = $this->nextVariantBarcodeCC();
+                    $relative = "assets/imgs/barcodes/{$variantBarcode}.png";
+                    $absolute = __DIR__ . "/../../" . $relative;
+
+                    $this->createBarcodePng($variantBarcode, $absolute);
+
+                    $this->insertVariant([
+                        'product_id'   => $productId,
+                        'size'         => $size,
+                        'color'        => $color,
+                        'price'        => $variant['price'] ?? null,
+                        'stock'        => $variant['stock'] ?? 0,
+                        'barcode'      => $variantBarcode,
+                        'barcode_path' => $relative,
+                        'active'       => isset($variant['active']) ? 1 : 0,
+                    ]);
+
+                    $keepIds[] = (int)$this->db->lastInsertId();
+                }
+
+                // Borrar solo las variantes que ya no vinieron en el form
+                $this->deleteVariantsExcept($productId, $keepIds);
+            }
+
+            $this->db->commit();
+            return true;
+
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
         }
-
-        $this->db->commit();
-        return true;
-
-    } catch (\Throwable $e) {
-        $this->db->rollBack();
-        throw $e;
     }
-}
+
     // ==========================================================
-    // ✅ Genera siguiente CC-000001 seguro (FOR UPDATE)
+    // ✅ Genera siguiente CC000001 seguro (FOR UPDATE)
     // ==========================================================
     private function nextBarcodeCC(): string
     {
         $sql = "SELECT barcode
                 FROM products
-                WHERE barcode LIKE 'CC-%'
+                WHERE barcode LIKE 'CC%'
                 ORDER BY id DESC
                 LIMIT 1
                 FOR UPDATE";
@@ -487,23 +488,23 @@ public function save(array $data): bool
         $last = $this->db->query($sql)->fetchColumn();
 
         if (!$last) {
-            return "CC-000001";
+            return "CC000001";
         }
 
-        $num = (int)substr($last, 3); // CC- = 3
+        $num = (int)substr($last, 2);
         $num++;
 
-        return "CC-" . str_pad((string)$num, 6, "0", STR_PAD_LEFT);
+        return "CC" . str_pad((string)$num, 6, "0", STR_PAD_LEFT);
     }
 
     // ==========================================================
-    // ✅ Genera siguiente CCV-000001 seguro (FOR UPDATE)
+    // ✅ Genera siguiente CC1000001 seguro (FOR UPDATE)
     // ==========================================================
     private function nextVariantBarcodeCC(): string
     {
         $sql = "SELECT barcode
                 FROM product_variants
-                WHERE barcode LIKE 'CCV-%'
+                WHERE barcode LIKE 'CC1%'
                 ORDER BY id DESC
                 LIMIT 1
                 FOR UPDATE";
@@ -511,14 +512,15 @@ public function save(array $data): bool
         $last = $this->db->query($sql)->fetchColumn();
 
         if (!$last) {
-            return "CCV-000001";
+            return "CC1000001";
         }
 
-        $num = (int)substr($last, 4); // CCV- = 4
+        $num = (int)substr($last, 3);
         $num++;
 
-        return "CCV-" . str_pad((string)$num, 6, "0", STR_PAD_LEFT);
+        return "CC1" . str_pad((string)$num, 6, "0", STR_PAD_LEFT);
     }
+
     public function findVariantById(int $variantId, int $productId): ?array
     {
         $stmt = $this->db->prepare("
@@ -580,6 +582,7 @@ public function save(array $data): bool
 
         return $stmt->execute($params);
     }
+
     public function allLabelsForAdmin(): array
     {
         $sql = "
@@ -626,6 +629,7 @@ public function save(array $data): bool
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
     }
+
     // ==========================================================
     // ✅ Crea imagen PNG Code128
     // ==========================================================
@@ -673,5 +677,4 @@ public function save(array $data): bool
         imagedestroy($img);
         imagedestroy($barsImg);
     }
-    
 }
