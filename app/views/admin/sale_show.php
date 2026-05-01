@@ -6,12 +6,12 @@ $items = $items ?? [];
 <div class="panel panel-right form-panel product-form-panel">
 
 <div class="panel-head">
-<h2 class="title-panel">Venta #<?= $sale['id'] ?></h2>
+  <h2 class="title-panel">Venta #<?= $sale['id'] ?></h2>
 
-<a class="btn-ghost" href="?c=sale&a=index">
-← Volver a ventas
-</a>
-
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn-ghost" href="?c=sale&a=index">← Volver a ventas</a>
+    <a class="btn-primary" href="?c=sale&a=ticket&id=<?= $sale['id'] ?>" target="_blank">Imprimir ticket</a>
+  </div>
 </div>
 
 

@@ -14,11 +14,15 @@ ksort($categoryOptions);
 
 <div class="panel panel-right form-panel product-form-panel">
   <div class="panel-head">
-    <div>
-      <h2 class="title-panel">Etiquetas</h2>
-      <div class="panel-sub">Imprime etiquetas de productos simples y variantes.</div>
-    </div>
+  <div>
+    <h2 class="title-panel">Etiquetas</h2>
+    <div class="panel-sub">Imprime etiquetas de productos simples y variantes.</div>
   </div>
+
+  <button type="button" class="btn-primary" id="btnOpenSheetModal">
+    Imprimir hoja de etiquetas
+  </button>
+</div>
 
   <div class="filters-card">
     <div class="filters-head">
@@ -139,7 +143,84 @@ ksort($categoryOptions);
     No se encontraron resultados con esos filtros.
   </div>
 </div>
+<div id="modalSheetLabels" class="modal-sheet-labels">
+  <div class="modal-sheet-box">
+    <div class="modal-sheet-head">
+      <div>
+        <h3>Hoja de etiquetas</h3>
+        <p>Configura columnas y filas según la hoja que compres.</p>
+      </div>
 
+      <button type="button" id="btnCloseSheetModal">×</button>
+    </div>
+
+    <div class="sheet-config-box">
+      <div class="sheet-config-row">
+        <div class="cfg-field">
+          <label>Columnas</label>
+          <input type="number" id="sheetCols" value="4" min="1" max="10">
+        </div>
+
+        <div class="cfg-field">
+          <label>Filas</label>
+          <input type="number" id="sheetRows" value="3" min="1" max="15">
+        </div>
+
+        <button type="button" class="btn-primary" id="btnApplyGrid">
+          Aplicar
+        </button>
+      </div>
+    </div>
+
+    <div class="sheet-grid-modal">
+      <?php for ($i = 1; $i <= 100; $i++): ?>
+        <div class="sheet-slot-modal">
+          <div class="slot-title">Etiqueta <?= $i ?></div>
+
+          <select class="slot-label-select" data-slot="<?= $i ?>">
+            <option value="">Vacía</option>
+
+            <?php foreach ($labels as $row): ?>
+              <?php
+                $isVariant = !empty($row['variant_id']);
+               $productId = $row['product_id'] 
+                    ?? $row['id_product'] 
+                    ?? $row['idProducto'] 
+                    ?? $row['id'] 
+                    ?? 0;
+
+                $key = $isVariant 
+                    ? ('v_' . (int)$row['variant_id']) 
+                    : ('p_' . (int)$productId);
+
+                $desc = $row['name'] ?? '';
+
+                if (!empty($row['size'])) {
+                    $desc .= ' - ' . $row['size'];
+                }
+
+                if (!empty($row['barcode'])) {
+                    $desc .= ' - ' . $row['barcode'];
+                }
+              ?>
+
+              <?php if (!empty($row['barcode_path']) || !empty($row['barcode'])): ?>
+                <option value="<?= htmlspecialchars($key) ?>">
+                  <?= htmlspecialchars($desc) ?>
+                </option>
+              <?php endif; ?>
+            <?php endforeach; ?>
+          </select>
+        </div>
+      <?php endfor; ?>
+    </div>
+
+    <div class="modal-sheet-actions">
+      <button type="button" class="btn-ghost" id="btnClearSheetSlots">Limpiar</button>
+      <button type="button" class="btn-primary" id="btnPrintSheetLabels">Imprimir hoja</button>
+    </div>
+  </div>
+</div>
 <style>
   .filters-card{
     margin:14px 0 18px;
@@ -309,6 +390,150 @@ ksort($categoryOptions);
       grid-template-columns:1fr;
     }
   }
+  .modal-sheet-labels{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.68);
+  z-index:9999;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+
+.modal-sheet-labels.show{
+  display:flex;
+}
+
+.modal-sheet-box{
+  width:980px;
+  max-width:100%;
+  max-height:92vh;
+  overflow:auto;
+  background:#16181d;
+  color:#fff;
+  border-radius:18px;
+  padding:18px;
+  border:1px solid rgba(255,255,255,.10);
+}
+
+.modal-sheet-head{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-start;
+  margin-bottom:16px;
+}
+
+.modal-sheet-head h3{
+  margin:0;
+  font-size:1.15rem;
+}
+
+.modal-sheet-head p{
+  margin:6px 0 0;
+  color:rgba(255,255,255,.65);
+  font-size:.9rem;
+}
+
+.modal-sheet-head button{
+  border:0;
+  background:transparent;
+  color:#fff;
+  font-size:30px;
+  cursor:pointer;
+  line-height:1;
+}
+
+.sheet-config-box{
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:14px;
+}
+
+.sheet-config-row{
+  display:flex;
+  gap:10px;
+  align-items:end;
+}
+
+.cfg-field label{
+  display:block;
+  font-size:.8rem;
+  margin-bottom:5px;
+  color:#aaa;
+}
+
+.cfg-field input{
+  width:90px;
+  height:40px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.15);
+  background:#20232b;
+  color:#fff;
+  padding:0 10px;
+}
+
+.sheet-grid-modal{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:12px;
+}
+
+.sheet-slot-modal{
+  border:1px dashed rgba(255,255,255,.18);
+  border-radius:14px;
+  padding:12px;
+  background:rgba(255,255,255,.035);
+  min-height:105px;
+}
+
+.sheet-slot-modal.hidden{
+  display:none;
+}
+
+.slot-title{
+  font-weight:800;
+  margin-bottom:8px;
+  color:#fff;
+  font-size:.92rem;
+}
+
+.slot-label-select{
+  width:100%;
+  height:42px;
+  border-radius:11px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#20232b;
+  color:#fff;
+  padding:0 10px;
+  outline:none;
+}
+
+.slot-label-select option{
+  background:#20232b;
+  color:#fff;
+}
+
+.modal-sheet-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:16px;
+}
+
+@media (max-width: 760px){
+  .sheet-config-row{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+
+  .sheet-grid-modal{
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  }
+}
 </style>
 
 <script>
@@ -520,7 +745,101 @@ ksort($categoryOptions);
       w.print();
     }, 350);
   });
+  const modalSheetLabels = document.getElementById('modalSheetLabels');
+  const btnOpenSheetModal = document.getElementById('btnOpenSheetModal');
+  const btnCloseSheetModal = document.getElementById('btnCloseSheetModal');
+  const btnPrintSheetLabels = document.getElementById('btnPrintSheetLabels');
+  const btnClearSheetSlots = document.getElementById('btnClearSheetSlots');
+  const btnApplyGrid = document.getElementById('btnApplyGrid');
+  const sheetCols = document.getElementById('sheetCols');
+  const sheetRows = document.getElementById('sheetRows');
 
+  function actualizarGridEtiquetas(){
+    const cols = Math.max(1, Math.min(10, parseInt(sheetCols?.value || '4', 10)));
+    const rows = Math.max(1, Math.min(15, parseInt(sheetRows?.value || '3', 10)));
+    const total = cols * rows;
+
+    if (sheetCols) sheetCols.value = cols;
+    if (sheetRows) sheetRows.value = rows;
+
+    const grid = document.querySelector('.sheet-grid-modal');
+
+    if (grid) {
+      grid.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
+    }
+
+    document.querySelectorAll('.sheet-slot-modal').forEach((box, index) => {
+      const slot = index + 1;
+      const select = box.querySelector('.slot-label-select');
+
+      if (slot > total) {
+        box.classList.add('hidden');
+        if (select) select.value = '';
+      } else {
+        box.classList.remove('hidden');
+      }
+    });
+  }
+
+  if (btnOpenSheetModal) {
+    btnOpenSheetModal.addEventListener('click', function(){
+      modalSheetLabels.classList.add('show');
+      actualizarGridEtiquetas();
+    });
+  }
+
+  if (btnCloseSheetModal) {
+    btnCloseSheetModal.addEventListener('click', function(){
+      modalSheetLabels.classList.remove('show');
+    });
+  }
+
+  if (btnApplyGrid) {
+    btnApplyGrid.addEventListener('click', actualizarGridEtiquetas);
+  }
+
+  if (btnClearSheetSlots) {
+    btnClearSheetSlots.addEventListener('click', function(){
+      document.querySelectorAll('.slot-label-select').forEach(select => {
+        select.value = '';
+      });
+    });
+  }
+
+  if (btnPrintSheetLabels) {
+    btnPrintSheetLabels.addEventListener('click', function(){
+      actualizarGridEtiquetas();
+
+      const cols = Math.max(1, Math.min(10, parseInt(sheetCols?.value || '4', 10)));
+      const rows = Math.max(1, Math.min(15, parseInt(sheetRows?.value || '3', 10)));
+      const total = cols * rows;
+
+      const map = {};
+
+      document.querySelectorAll('.slot-label-select').forEach(select => {
+        const slot = parseInt(select.getAttribute('data-slot') || '0', 10);
+        const value = select.value;
+
+        if (slot >= 1 && slot <= total && value) {
+          map[slot] = value;
+        }
+      });
+
+      if (Object.keys(map).length === 0) {
+        alert('Selecciona al menos una etiqueta.');
+        return;
+      }
+
+      const encoded = btoa(JSON.stringify(map));
+
+      const url = '?c=label&a=printSheet'
+        + '&cols=' + encodeURIComponent(cols)
+        + '&rows=' + encodeURIComponent(rows)
+        + '&map=' + encodeURIComponent(encoded);
+
+      window.open(url, '_blank');
+    });
+  }
   applyFilters(true);
 })();
 </script>

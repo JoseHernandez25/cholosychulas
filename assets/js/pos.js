@@ -7,6 +7,18 @@
   const URL_COBRAR = window.POS_CFG.URL_COBRAR;
   const CAJA_ABIERTA = !!window.POS_CFG.CAJA_ABIERTA;
 
+  // Construye la URL del ticket sin depender de cambios extra en caja.php
+  function buildTicketBaseUrl() {
+    if (!URL_COBRAR) return '';
+    try {
+      return URL_COBRAR.replace('?c=caja&a=cobrar', '?c=sale&a=ticket&id=');
+    } catch (e) {
+      return '';
+    }
+  }
+
+  const URL_TICKET_BASE = buildTicketBaseUrl();
+
   // carrito item:
   // {
   //   id,
@@ -22,7 +34,7 @@
   // }
   let carrito = [];
   let selectedKey = null;
-  let lastTicketHtml = '';
+  let lastSaleId = null;
 
   const scanInput   = document.getElementById('scanInput');
   const scanStatus  = document.getElementById('scanStatus');
@@ -96,6 +108,13 @@
     if (item.size) parts.push(item.size);
     if (item.color) parts.push(item.color);
     return parts.join(' / ');
+  }
+
+  function openTicketBySaleId(id, autoPrint = false) {
+    if (!id || !URL_TICKET_BASE) return null;
+
+    const url = URL_TICKET_BASE + encodeURIComponent(id) + (autoPrint ? '&print=1' : '');
+    return window.open(url, '_blank');
   }
 
   function render() {
@@ -285,7 +304,7 @@
       }
 
       if (saleInfo) saleInfo.textContent = 'Última venta: #' + data.id_venta;
-      lastTicketHtml = data.ticket_html || '';
+      lastSaleId = Number(data.id_venta || 0) || null;
 
       carrito = [];
       selectedKey = null;
@@ -293,10 +312,15 @@
       setStatus('Venta registrada', 'ok');
       ok();
 
+      // abre el ticket ya guardado por id_venta
+      if (lastSaleId) {
+        openTicketBySaleId(lastSaleId, true);
+      }
+
       // recargar para refrescar resumen de caja
       setTimeout(() => {
         window.location.reload();
-      }, 700);
+      }, 1200);
 
     } catch (err) {
       console.error(err);
@@ -314,17 +338,12 @@
       return;
     }
 
-    if (!lastTicketHtml) {
-      setStatus('No hay ticket (cobra primero)', 'warn');
+    if (!lastSaleId) {
+      setStatus('No hay venta reciente para imprimir', 'warn');
       return;
     }
 
-    const w = window.open('', '_blank', 'width=420,height=700');
-    w.document.open();
-    w.document.write(lastTicketHtml);
-    w.document.close();
-    w.focus();
-    w.print();
+    openTicketBySaleId(lastSaleId, true);
   }
 
   function clearCart() {

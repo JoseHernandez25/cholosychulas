@@ -42,7 +42,9 @@ $sales = $sales ?? [];
 <td><?= $s['created_at'] ?></td>
 
 <td>
-<a class="btn-link" href="?c=sale&a=show&id=<?= $s['id'] ?>">Ver</a>
+  <a class="btn-link" href="?c=sale&a=show&id=<?= $s['id'] ?>">Ver</a>
+  |
+  <a class="btn-link" href="?c=sale&a=ticket&id=<?= $s['id'] ?>" target="_blank">Ticket</a>
 </td>
 
 </tr>

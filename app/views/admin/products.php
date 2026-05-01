@@ -12,6 +12,11 @@ foreach ($products as $p) {
     }
 }
 ksort($categoryOptions);
+
+$totalProductsRegistered = count($products);
+$totalPiecesRegistered = array_sum(array_map(function($p){
+    return (int)($p['stock'] ?? 0);
+}, $products));
 ?>
 
 <div class="panel panel-right form-panel product-form-panel">
@@ -74,12 +79,11 @@ ksort($categoryOptions);
     <table id="productsTable">
       <thead>
         <tr>
-          <th>ID</th>
           <th>Nombre</th>
           <th>Categoría</th>
           <th>Tipo</th>
           <th>Precio</th>
-          <th>Stock</th>
+          <th>Existencias</th>
           <th>Estado</th>
           <th>Acciones</th>
         </tr>
@@ -101,8 +105,6 @@ ksort($categoryOptions);
             data-type="<?= $typeValue ?>"
             data-status="<?= $statusValue ?>"
           >
-            <td><?= (int)$row['id'] ?></td>
-
             <td>
               <div class="prod-name"><?= htmlspecialchars($row['name']) ?></div>
             </td>
@@ -137,7 +139,7 @@ ksort($categoryOptions);
 
             <td>$<?= number_format((float)($row['price'] ?? 0), 2) ?></td>
 
-            <td><?= (int)($row['stock'] ?? 0) ?></td>
+            <td><?= (int)($row['stock'] ?? 0) ?> pzas</td>
 
             <td>
               <span class="badge <?= !empty($row['active']) ? 'badge-active' : 'badge-inactive' ?>">
@@ -158,11 +160,23 @@ ksort($categoryOptions);
         <?php endforeach; ?>
       <?php else: ?>
         <tr id="emptyRowStatic">
-          <td colspan="8">No hay productos registrados.</td>
+          <td colspan="7">No hay productos registrados.</td>
         </tr>
       <?php endif; ?>
       </tbody>
     </table>
+  </div>
+
+  <div class="inventory-summary">
+    <div class="inventory-summary-card">
+      <span class="inventory-summary-label">Total de productos registrados</span>
+      <strong id="totalProductsCount"><?= $totalProductsRegistered ?></strong>
+    </div>
+
+    <div class="inventory-summary-card">
+      <span class="inventory-summary-label">Total de piezas</span>
+      <strong id="totalStockCount"><?= $totalPiecesRegistered ?></strong>
+    </div>
   </div>
 
   <div class="pagination-wrap" id="paginationWrap" style="display:none;">
@@ -200,8 +214,8 @@ ksort($categoryOptions);
               <th>Talla</th>
               <th>Color</th>
               <th>Precio</th>
-              <th>Stock</th>
-              <th>Barcode</th>
+              <th>Existencias</th>
+              <th>Código</th>
               <th>Estado</th>
             </tr>
           </thead>
@@ -352,6 +366,43 @@ ksort($categoryOptions);
     opacity:.9;
   }
 
+  .inventory-summary{
+  margin-top:12px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.inventory-summary-card{
+  min-width:170px;
+  padding:8px 12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.025);
+  box-shadow:none;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.inventory-summary-label{
+  font-size:.8rem;
+  color:#cfcfd4;
+  opacity:.9;
+}
+
+.inventory-summary-card strong{
+  font-size:1rem;
+  color:#fff;
+  line-height:1.1;
+}
+
+  .inventory-summary-card strong{
+    font-size:1.35rem;
+    color:#fff;
+    line-height:1;
+  }
+
   .pagination-wrap{
     margin-top:14px;
     display:flex;
@@ -424,6 +475,10 @@ ksort($categoryOptions);
     .filters-grid{
       grid-template-columns:1fr;
     }
+
+    .inventory-summary{
+      grid-template-columns:1fr;
+    }
   }
 </style>
 
@@ -441,8 +496,10 @@ ksort($categoryOptions);
   const btnPrevPage = document.getElementById('btnPrevPage');
   const btnNextPage = document.getElementById('btnNextPage');
   const paginationInfo = document.getElementById('paginationInfo');
+  const totalProductsCount = document.getElementById('totalProductsCount');
+  const totalStockCount = document.getElementById('totalStockCount');
 
-  const rowsPerPage = 10;
+  const rowsPerPage = 5;
   let currentPage = 1;
   let filteredRows = [];
 
@@ -475,6 +532,24 @@ ksort($categoryOptions);
     });
   }
 
+  function updateSummary() {
+    if (!filteredRows) return;
+
+    let totalProducts = filteredRows.length;
+    let totalPieces = 0;
+
+    filteredRows.forEach(row => {
+      const stockCell = row.children[4];
+      if (!stockCell) return;
+
+      const stockText = (stockCell.textContent || '').replace(/[^\d\-]/g, '');
+      totalPieces += Number(stockText || 0);
+    });
+
+    if (totalProductsCount) totalProductsCount.textContent = totalProducts;
+    if (totalStockCount) totalStockCount.textContent = totalPieces;
+  }
+
   function renderPagination() {
     const totalRows = filteredRows.length;
     const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
@@ -502,6 +577,7 @@ ksort($categoryOptions);
   function applyFilters(resetPage = true){
     if (resetPage) currentPage = 1;
     filteredRows = getVisibleRowsByFilter();
+    updateSummary();
     renderPagination();
   }
 
@@ -602,7 +678,7 @@ ksort($categoryOptions);
           <td>${v.size ? escapeHtml(v.size) : '—'}</td>
           <td>${v.color ? escapeHtml(v.color) : '—'}</td>
           <td>$${Number(v.price || 0).toFixed(2)}</td>
-          <td>${Number(v.stock || 0)}</td>
+          <td>${Number(v.stock || 0)} pzas</td>
           <td>${v.barcode ? escapeHtml(v.barcode) : '—'}</td>
           <td>${badgeEstado(Number(v.active || 0) === 1)}</td>
         </tr>

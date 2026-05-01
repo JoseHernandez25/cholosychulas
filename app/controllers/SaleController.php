@@ -46,4 +46,26 @@ class SaleController extends Controller
             'items' => $items
         ], 'admin');
     }
+
+    public function ticket()
+    {
+        $id = (int)($_GET['id'] ?? 0);
+
+        if ($id <= 0) {
+            die('Venta no válida');
+        }
+
+        $saleModel = new Sale();
+        $sale = $saleModel->findForAdmin($id);
+
+        if (!$sale) {
+            die('Venta no encontrada');
+        }
+
+        $items = $saleModel->itemsBySale($id);
+
+        // Vista especial para impresión, sin layout admin
+        require __DIR__ . '/../views/sales/ticket.php';
+        exit;
+    }
 }
